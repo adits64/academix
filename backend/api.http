@@ -1,0 +1,153 @@
+@baseUrl = http://localhost:5000
+@userId = 6a567fb2fce45328454bb0cf
+@adminToken= eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTU2N2ZjZGZjZTQ1MzI4NDU0YmIwZDAiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3ODczOTYxNDYsImV4cCI6MTc4NzQ4MjU0Nn0.-M_z_3bt1CbQGU9HDnaVeaI9241nQ-Z0sIfGfWD-MP8
+@courseId = 6a89814c023afbc1b259a053
+@studentId = 6a89808d023afbc1b259a051
+@teacherId = 6a8980ea023afbc1b259a052
+@batchId = 6a89814c023afbc1b259a054
+@enrollmentId = 6a898182023afbc1b259a057
+
+### test api
+
+GET {{baseUrl}}
+
+### create user
+POST {{baseUrl}}/users
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+    "name": "sus",
+    "email": "msushmita623@gmail.com",
+    "password": "123456",
+    "role": "student"
+}
+### CREATE TEACHER
+POST {{baseUrl}}/users
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+    "name": "John Teacher",
+    "email": "teacher2@gmail.com",
+    "password": "123456",
+    "role": "teacher"
+}
+### ADMIN LOGIN
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "admin1@gmail.com",
+    "password": "123456"
+}
+
+### get all user
+GET {{baseUrl}}/users
+
+### get user by id
+GET {{baseUrl}}/users/{{userId}}
+
+### update user
+PATCH {{baseUrl}}/users/{{userId}}
+Content-Type: application/json
+
+{
+    "email": "abcr@gmail.com"
+    
+}
+
+### delete user by id
+DELETE {{baseUrl}}/users/{{userId}}
+
+### ADMIN LOGIN
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "admin1@gmail.com",
+    "password": "123456"
+}
+
+### ADMIN - CREATE COURSE
+POST {{baseUrl}}/courses
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+    "name": "MERN Stack Development",
+    "code": "MERN-1",
+    "description": "Full stack web development course",
+    "duration": "6 months",
+    "fee": 45000,
+    "status": "active",
+    "teacher": "{{teacherId}}",
+    "batches": [
+        {
+            "name": "Morning Batch",
+            "startDate": "2026-09-01",
+            "endDate": "2027-02-28",
+            "startTime": "07:00",
+            "endTime": "09:00"
+        }
+    ]
+}
+
+### Get All Courses
+GET {{baseUrl}}/courses
+Authorization: Bearer {{adminToken}}
+
+
+### Get One Course
+GET {{baseUrl}}/courses/{{courseId}}
+Authorization: Bearer {{adminToken}}
+
+### Update Course
+PATCH {{baseUrl}}/courses/{{courseId}}
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "fee": 50000
+}
+
+### Duplicate Course Code
+POST {{baseUrl}}/courses
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "name": "Another MERN Course",
+    "code": "MERN-1",
+    "duration": "3 months",
+    "fee": 30000
+}
+
+### Delete Course
+DELETE {{baseUrl}}/courses/{{courseId}}
+Authorization: Bearer {{adminToken}}
+
+### ADMIN - CREATE ENROLLMENT
+POST {{baseUrl}}/enrollments
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+    "studentId": "{{studentId}}",
+    "courseId": "{{courseId}}",
+    "batchId": "{{batchId}}"
+}
+
+### TEST MAIL
+POST {{baseUrl}}/email
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+    "studentIds": [
+        "{{studentId}}"
+    ],
+    "subject": "Love Email ❤️",
+    "message": "I love you ❤️"
+}
