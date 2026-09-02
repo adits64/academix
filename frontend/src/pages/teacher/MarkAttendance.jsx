@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import EmptyState from '@/components/common/EmptyState';
+import UserAvatar from '@/components/common/UserAvatar';
 
 import {
   Calendar,
@@ -369,9 +370,7 @@ export function MarkAttendance() {
                     className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-muted/20 transition-colors"
                   >
                     <div className="flex items-center space-x-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-xs">
-                        {getInitials(student.name)}
-                      </div>
+                      <UserAvatar user={student} size="md" />
                       <div>
                         <p className="font-semibold text-sm text-foreground">{student.name}</p>
                         <p className="text-xs text-muted-foreground">{student.email}</p>

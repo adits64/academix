@@ -167,9 +167,12 @@ export function StudentNotes() {
                     <span className="flex items-center">
                       <User className="h-3.5 w-3.5 mr-1 text-primary" /> Teacher
                     </span>
-                    <span className="font-medium text-foreground truncate max-w-[150px]">
-                      {note.uploadedBy.name}
-                    </span>
+                    <div className="flex items-center space-x-1 font-medium text-foreground truncate max-w-[150px]">
+                      {note.uploadedBy.avatar && (
+                        <img src={note.uploadedBy.avatar} alt="" className="h-3.5 w-3.5 rounded-full object-cover" />
+                      )}
+                      <span className="truncate">{note.uploadedBy.name}</span>
+                    </div>
                   </div>
                 )}
               </CardContent>

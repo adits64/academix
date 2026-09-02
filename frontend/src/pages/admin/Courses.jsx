@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import EmptyState from '@/components/common/EmptyState';
+import UserAvatar from '@/components/common/UserAvatar';
 
 import {
   BookOpen,
@@ -710,12 +711,11 @@ export function Courses() {
                                 className="p-3 rounded-lg border bg-card hover:border-primary/40 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2.5"
                               >
                                 <div className="flex items-center space-x-3">
-                                  <div
-                                    className="h-8 w-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+                                  <UserAvatar
+                                    user={student}
+                                    size="sm"
                                     onClick={() => student?._id && navigate(`/admin/users/${student._id}`)}
-                                  >
-                                    {getInitials(student?.name || 'Student')}
-                                  </div>
+                                  />
                                   <div>
                                     <div className="flex items-center gap-2">
                                       <span

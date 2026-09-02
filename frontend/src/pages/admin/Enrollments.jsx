@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import EmptyState from '@/components/common/EmptyState';
+import UserAvatar from '@/components/common/UserAvatar';
 
 import {
   UserCheck,
@@ -219,14 +220,21 @@ export function Enrollments() {
               <tbody className="divide-y">
                 {filteredEnrollments.map((item) => (
                   <tr key={item._id} className="hover:bg-muted/20 transition-colors">
-                    <td className="py-3 px-4 font-semibold text-foreground">
-                      <span
-                        className="hover:text-primary hover:underline cursor-pointer transition-colors"
+                    <td className="py-3 px-4 font-semibold text-foreground flex items-center space-x-3">
+                      <UserAvatar
+                        user={item.studentId}
+                        size="sm"
                         onClick={() => item.studentId?._id && navigate(`/admin/users/${item.studentId._id}`)}
-                      >
-                        {item.studentId?.name || 'Unknown Student'}
-                      </span>
-                      <p className="text-[11px] font-normal text-muted-foreground">{item.studentId?.email}</p>
+                      />
+                      <div>
+                        <span
+                          className="hover:text-primary hover:underline cursor-pointer transition-colors block"
+                          onClick={() => item.studentId?._id && navigate(`/admin/users/${item.studentId._id}`)}
+                        >
+                          {item.studentId?.name || 'Unknown Student'}
+                        </span>
+                        <p className="text-[11px] font-normal text-muted-foreground">{item.studentId?.email}</p>
+                      </div>
                     </td>
                     <td className="py-3 px-4 font-medium">{item.courseId?.name || 'N/A'}</td>
                     <td className="py-3 px-4 text-foreground font-medium text-xs">

@@ -107,7 +107,12 @@ export function StudentCourses() {
                       {teacher.name && (
                         <div className="flex items-center justify-between">
                           <span className="flex items-center"><User className="h-3.5 w-3.5 mr-1 text-primary" /> Instructor</span>
-                          <span className="font-semibold text-foreground">{teacher.name}</span>
+                          <div className="flex items-center space-x-1.5 font-semibold text-foreground">
+                            {teacher.avatar ? (
+                              <img src={teacher.avatar} alt="" className="h-4 w-4 rounded-full object-cover" />
+                            ) : null}
+                            <span>{teacher.name}</span>
+                          </div>
                         </div>
                       )}
 

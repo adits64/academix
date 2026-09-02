@@ -13,6 +13,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import UserAvatar from '@/components/common/UserAvatar';
 
 import {
   BookOpen,
@@ -81,15 +82,18 @@ export function StudentDashboard() {
 
   return (
     <div className="space-y-6">
-      {}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Welcome back, {user?.name || 'Student'}!
-          </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            Track your class schedules, check daily attendance, access lecture notes, and review your status.
-          </p>
+        <div className="flex items-center space-x-3">
+          <UserAvatar user={user} size="md" />
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Welcome back, {user?.name || 'Student'}!
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Track your class schedules, check daily attendance, access lecture notes, and review your status.
+            </p>
+          </div>
         </div>
         <Badge variant="outline" className="w-fit text-xs font-semibold px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-300">
           <Sparkles className="h-3.5 w-3.5 mr-1" /> Student Academic Hub

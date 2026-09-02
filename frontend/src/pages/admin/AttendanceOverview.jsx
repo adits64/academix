@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import EmptyState from '@/components/common/EmptyState';
+import UserAvatar from '@/components/common/UserAvatar';
 
 import {
   Calendar,
@@ -406,12 +407,11 @@ export function AttendanceOverview() {
                       className="p-3.5 rounded-lg border bg-card hover:border-primary/40 transition-all flex flex-col justify-between space-y-3"
                     >
                       <div className="flex items-start space-x-3">
-                        <div
-                          className="h-9 w-9 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs cursor-pointer hover:ring-2 hover:ring-primary transition-all mt-0.5"
+                        <UserAvatar
+                          user={student}
+                          size="md"
                           onClick={() => student?._id && navigate(`/admin/users/${student._id}`)}
-                        >
-                          {getInitials(student?.name || 'Student')}
-                        </div>
+                        />
                         <div className="flex-1 min-w-0">
                           <span
                             className="font-bold text-xs hover:text-primary hover:underline cursor-pointer transition-colors block truncate"
@@ -538,12 +538,11 @@ export function AttendanceOverview() {
                   {filteredRecords.map((r) => (
                     <tr key={r._id} className="hover:bg-muted/20 transition-colors">
                       <td className="py-3 px-4 font-semibold text-foreground flex items-center space-x-2.5">
-                        <div
-                          className="h-7 w-7 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+                        <UserAvatar
+                          user={r.studentId}
+                          size="sm"
                           onClick={() => r.studentId?._id && navigate(`/admin/users/${r.studentId._id}`)}
-                        >
-                          {getInitials(r.studentId?.name || 'Student')}
-                        </div>
+                        />
                         <div>
                           <span
                             className="hover:text-primary hover:underline cursor-pointer transition-colors block"

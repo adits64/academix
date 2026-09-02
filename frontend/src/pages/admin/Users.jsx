@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import EmptyState from '@/components/common/EmptyState';
+import UserAvatar from '@/components/common/UserAvatar';
 
 import {
   Users as UsersIcon,
@@ -214,9 +215,11 @@ export function Users() {
                 {filteredUsers.map((u) => (
                   <tr key={u._id} className="hover:bg-muted/20 transition-colors">
                     <td className="py-3 px-4 font-medium flex items-center space-x-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-xs">
-                        {getInitials(u.name)}
-                      </div>
+                      <UserAvatar
+                        user={u}
+                        size="sm"
+                        onClick={() => navigate(`/admin/users/${u._id}`)}
+                      />
                       <span
                         className="font-semibold text-foreground hover:text-primary hover:underline cursor-pointer transition-colors"
                         onClick={() => navigate(`/admin/users/${u._id}`)}

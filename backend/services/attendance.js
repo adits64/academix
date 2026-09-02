@@ -15,7 +15,7 @@ export const create = async (data) => {
 
 export const getAll = async () => {
     const attendances = await Attendance.find()
-        .populate("studentId", "name email")
+        .populate("studentId", "name email avatar")
         .populate("courseId", "name code teacher")
         .populate("markedBy", "name email");
 
@@ -36,7 +36,7 @@ export const getTeacherAttendance = async (teacherId) => {
     const attendances = await Attendance.find({
         courseId: { $in: courseIds }
     })
-        .populate("studentId", "name email")
+        .populate("studentId", "name email avatar")
         .populate("courseId", "name code teacher")
         .populate("markedBy", "name email");
 
@@ -66,7 +66,7 @@ export const getTeacherBatchAttendance = async (
         courseId,
         batchId
     })
-        .populate("studentId", "name email")
+        .populate("studentId", "name email avatar")
         .populate("courseId", "name code teacher")
         .populate("markedBy", "name email");
 
@@ -95,7 +95,7 @@ export const find = async (param, config, user) => {
         param,
         config
     )
-        .populate("studentId", "name email")
+        .populate("studentId", "name email avatar")
         .populate("courseId", "name code teacher")
         .populate("markedBy", "name email");
 
@@ -174,7 +174,7 @@ export const update = async (id, data, user) => {
 
 
     
-    await attendance.populate("studentId", "name email");
+    await attendance.populate("studentId", "name email avatar");
     await attendance.populate("markedBy", "name email");
 
     return attendance;

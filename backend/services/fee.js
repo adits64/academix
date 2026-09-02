@@ -27,26 +27,26 @@ export const create = async (data) => {
     const fee = await Fees.create(feeData);
 
     return await fee.populate([
-        { path: "studentId", select: "name email" },
+        { path: "studentId", select: "name email avatar" },
         { path: "courseId", select: "name code fee" }
     ]);
 };
 
 export const getAll = async () => {
     return await Fees.find()
-        .populate("studentId", "name email")
+        .populate("studentId", "name email avatar")
         .populate("courseId", "name code fee");
 };
 
 export const getMyFees = async (studentId) => {
     return await Fees.find({ studentId })
-        .populate("studentId", "name email")
+        .populate("studentId", "name email avatar")
         .populate("courseId", "name code fee");
 };
 
 export const find = async (param, config) => {
     const fee = await Fees.findOne(param, config)
-        .populate("studentId", "name email")
+        .populate("studentId", "name email avatar")
         .populate("courseId", "name code fee");
 
     if (!fee) {
@@ -89,7 +89,7 @@ export const update = async (id, data) => {
             runValidators: true
         }
     )
-        .populate("studentId", "name email")
+        .populate("studentId", "name email avatar")
         .populate("courseId", "name code fee");
 
     return fee;
@@ -131,7 +131,7 @@ export const recordPayment = async (id, amount) => {
     await fee.save();
 
     return await fee.populate([
-        { path: "studentId", select: "name email" },
+        { path: "studentId", select: "name email avatar" },
         { path: "courseId", select: "name code fee" }
     ]);
 };

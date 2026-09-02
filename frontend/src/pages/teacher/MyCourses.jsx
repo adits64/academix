@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import EmptyState from '@/components/common/EmptyState';
+import UserAvatar from '@/components/common/UserAvatar';
 
 import {
   BookOpen,
@@ -300,16 +301,19 @@ export function MyCourses() {
                       const student = s.studentId || s;
                       return (
                         <div key={s._id || student._id || idx} className="p-3 flex items-center justify-between text-xs hover:bg-muted/20 transition-colors">
-                          <div className="space-y-0.5">
-                            <p className="font-semibold text-foreground">{student.name || 'Student'}</p>
-                            <p className="text-muted-foreground flex items-center">
-                              <Mail className="h-3 w-3 mr-1 inline" /> {student.email}
-                            </p>
-                            {student.phone && (
-                              <p className="text-[11px] text-muted-foreground flex items-center">
-                                <Phone className="h-2.5 w-2.5 mr-1 inline" /> {student.phone}
+                          <div className="flex items-center space-x-2.5">
+                            <UserAvatar user={student} size="sm" />
+                            <div className="space-y-0.5">
+                              <p className="font-semibold text-foreground">{student.name || 'Student'}</p>
+                              <p className="text-muted-foreground flex items-center">
+                                <Mail className="h-3 w-3 mr-1 inline" /> {student.email}
                               </p>
-                            )}
+                              {student.phone && (
+                                <p className="text-[11px] text-muted-foreground flex items-center">
+                                  <Phone className="h-2.5 w-2.5 mr-1 inline" /> {student.phone}
+                                </p>
+                              )}
+                            </div>
                           </div>
                           <div className="text-right space-y-1">
                             <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-600 border-emerald-200">

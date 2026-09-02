@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import EmptyState from '@/components/common/EmptyState';
+import UserAvatar from '@/components/common/UserAvatar';
 
 import {
   CreditCard,
@@ -523,12 +524,11 @@ export function Fees() {
                   <tr key={r._id} className="hover:bg-muted/20 transition-colors">
                     {/* Student Info with Navigation */}
                     <td className="py-3 px-4 font-semibold text-foreground flex items-center space-x-3">
-                      <div
-                        className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-xs cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+                      <UserAvatar
+                        user={r.student}
+                        size="sm"
                         onClick={() => r.student?._id && navigate('/admin/users/' + r.student._id)}
-                      >
-                        {getInitials(r.student?.name || 'Student')}
-                      </div>
+                      />
                       <div>
                         <span
                           className="hover:text-primary hover:underline cursor-pointer transition-colors block"

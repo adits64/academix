@@ -67,7 +67,7 @@ export const getMyBatchStudents = async (
         batchId,
         status: "active"
     })
-        .populate("studentId", "name email phone");
+        .populate("studentId", "name email phone avatar");
 
     return enrollments;
 };

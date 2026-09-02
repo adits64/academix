@@ -49,7 +49,7 @@ export const create = async (data, teacherId) => {
 export const getAll = async () => {
 
     const notes = await Note.find()
-        .populate("teacherId", "name email")
+        .populate("teacherId", "name email avatar")
         .populate("courseId", "name code");
 
     return notes;
@@ -94,7 +94,7 @@ export const getMyNotes = async (studentId) => {
             batchId: enrollment.batchId,
         })),
     })
-        .populate("teacherId", "name email")
+        .populate("teacherId", "name email avatar")
         .populate("courseId", "name code");
 
     return notes;
@@ -111,7 +111,7 @@ export const getMyNotes = async (studentId) => {
 export const find = async (id, user) => {
 
     const note = await Note.findById(id)
-        .populate("teacherId", "name email")
+        .populate("teacherId", "name email avatar")
         .populate("courseId", "name code");
 
     if (!note) {
@@ -208,7 +208,7 @@ export const update = async (id, data, teacherId) => {
     await note.save();
 
 
-    await note.populate("teacherId", "name email");
+    await note.populate("teacherId", "name email avatar");
     await note.populate("courseId", "name code");
 
     return note;

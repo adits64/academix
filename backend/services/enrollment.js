@@ -10,7 +10,7 @@ export const create = async (data) => {
 
 export const getAll = async () => {
     const enrollments = await Enrollment.find()
-        .populate("studentId", "name email")
+        .populate("studentId", "name email avatar")
         .populate("courseId", "name code batches");
 
     return enrollments.map((enrollment) => {
@@ -32,7 +32,7 @@ export const getAll = async () => {
 
 export const find = async (param, config) => {
     const enrollment = await Enrollment.findOne(param, config)
-        .populate("studentId", "name email")
+        .populate("studentId", "name email avatar")
         .populate("courseId", "name code batches");
 
     if (!enrollment) {

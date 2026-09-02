@@ -55,12 +55,12 @@ export function UserDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const notify = useNotification();
-  const { user: authUser } = useAuth();
+  const { user: authUser, updateUser: updateAuthUser } = useAuth();
   const queryClient = useQueryClient();
 
-  const isSelf = String(authUser?._id) === String(id);
+  const isSelf = Boolean(authUser?._id && id && String(authUser._id) === String(id));
 
-  
+  // Edit user state
   const [isEditingUser, setIsEditingUser] = useState(false);
   const [editName, setEditName] = useState('');
   const [editEmail, setEditEmail] = useState('');
@@ -83,19 +83,19 @@ export function UserDetail() {
     }
   };
 
-  
+  // Enroll modal state (for students)
   const [isEnrollOpen, setIsEnrollOpen] = useState(false);
   const [enrollCourseId, setEnrollCourseId] = useState('');
   const [enrollBatchId, setEnrollBatchId] = useState('');
   const [deletingEnrollment, setDeletingEnrollment] = useState(null);
 
-  
+  // Assign course to teacher state (for teachers)
   const [isAssignCourseOpen, setIsAssignCourseOpen] = useState(false);
   const [selectedCourseToAssign, setSelectedCourseToAssign] = useState('');
   const [unassigningCourse, setUnassigningCourse] = useState(null);
   const [reassignTeacherId, setReassignTeacherId] = useState('');
 
-  
+  // Fetch user profile
   const { data: userData, isLoading: userLoading, isError, error } = useQuery({
     queryKey: ['user', id],
     queryFn: () => usersApi.getUserById(id),
@@ -105,15 +105,15 @@ export function UserDetail() {
   const user = userData?.user;
   const role = user?.role;
 
-  
+  // Fetch all users for other teachers list
   const { data: usersData } = useQuery({
     queryKey: ['users'],
     queryFn: usersApi.getAllUsers,
     enabled: role === 'teacher',
   });
-  const allOtherTeachers = (usersData?.users || []).filter((u) => u.role === 'teacher' && u._id !== id);
+  const allOtherTeachers = (usersData?.users || []).filter((u) => u.role === 'teacher' && String(u._id) !== String(id));
 
-  
+  // Fetch courses
   const { data: allCoursesData } = useQuery({
     queryKey: ['courses'],
     queryFn: coursesApi.getAllCourses,
@@ -121,28 +121,28 @@ export function UserDetail() {
   });
   const allCourses = allCoursesData?.courses || [];
 
-  
+  // Fetch enrollments (for student)
   const { data: allEnrollments } = useQuery({
     queryKey: ['enrollments'],
     queryFn: enrollmentsApi.getAllEnrollments,
     enabled: role === 'student',
   });
 
-  
+  // Fetch attendance
   const { data: allAttendance } = useQuery({
     queryKey: ['attendance', 'admin'],
     queryFn: attendanceApi.getAllAttendance,
     enabled: Boolean(user),
   });
 
-  
+  // Fetch notes
   const { data: allNotes } = useQuery({
     queryKey: ['notes', 'admin'],
     queryFn: notesApi.getAllNotes,
     enabled: Boolean(user),
   });
 
-  
+  // Assign Course to Teacher Mutation
   const assignCourseToTeacherMutation = useMutation({
     mutationFn: (courseId) => coursesApi.updateCourse(courseId, { teacher: id }),
     onSuccess: () => {
@@ -156,7 +156,7 @@ export function UserDetail() {
     },
   });
 
-  
+  // Unassign Course from Teacher Mutation
   const unassignCourseFromTeacherMutation = useMutation({
     mutationFn: ({ courseId, replacementTeacherId }) =>
       coursesApi.updateCourse(courseId, { teacher: replacementTeacherId }),
@@ -173,40 +173,40 @@ export function UserDetail() {
 
   const existingCourseIds = new Set(allCourses.map((c) => String(c._id)));
 
-  
+  // Derive role-specific data
   const teacherCourses = role === 'teacher'
-    ? allCourses.filter((c) => c.teacher?._id === id || c.teacher === id)
+    ? allCourses.filter((c) => String(c.teacher?._id || c.teacher || '') === String(id))
     : [];
 
-  const assignableCourses = allCourses.filter((c) => c.teacher?._id !== id && c.teacher !== id);
+  const assignableCourses = allCourses.filter((c) => String(c.teacher?._id || c.teacher || '') !== String(id));
 
   const studentEnrollments = role === 'student'
     ? (Array.isArray(allEnrollments) ? allEnrollments : []).filter((e) => {
-        const isStudent = e.studentId?._id === id || e.studentId === id;
+        const isStudent = String(e.studentId?._id || e.studentId || '') === String(id);
         const courseId = String(e.courseId?._id || e.courseId || '');
-        const hasValidCourse = courseId && existingCourseIds.has(courseId);
+        const hasValidCourse = courseId && (existingCourseIds.size === 0 || existingCourseIds.has(courseId));
         return isStudent && hasValidCourse && e.courseId;
       })
     : [];
 
   const userAttendance = (Array.isArray(allAttendance) ? allAttendance : []).filter((a) => {
     const courseId = String(a.courseId?._id || a.courseId || '');
-    const hasValidCourse = courseId && existingCourseIds.has(courseId);
+    const hasValidCourse = courseId && (existingCourseIds.size === 0 || existingCourseIds.has(courseId));
     if (!hasValidCourse) return false;
-    if (role === 'student') return a.studentId?._id === id || a.studentId === id;
-    if (role === 'teacher') return a.markedBy?._id === id || a.markedBy === id;
+    if (role === 'student') return String(a.studentId?._id || a.studentId || '') === String(id);
+    if (role === 'teacher') return String(a.markedBy?._id || a.markedBy || '') === String(id);
     return false;
   });
 
   const userNotes = (Array.isArray(allNotes) ? allNotes : []).filter((n) => {
     const courseId = String(n.courseId?._id || n.courseId || '');
-    const hasValidCourse = courseId && existingCourseIds.has(courseId);
+    const hasValidCourse = courseId && (existingCourseIds.size === 0 || existingCourseIds.has(courseId));
     if (!hasValidCourse) return false;
-    if (role === 'teacher') return n.uploadedBy?._id === id || n.uploadedBy === id;
+    if (role === 'teacher') return String(n.uploadedBy?._id || n.uploadedBy || '') === String(id);
     return false;
   });
 
-  
+  // Enroll in Course Mutation
   const enrollMutation = useMutation({
     mutationFn: enrollmentsApi.createEnrollment,
     onSuccess: () => {
@@ -221,9 +221,9 @@ export function UserDetail() {
     },
   });
 
-  
+  // Update Status Mutation
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, data }) => enrollmentsApi.updateEnrollment(id, data),
+    mutationFn: ({ id: enrollmentId, data }) => enrollmentsApi.updateEnrollment(enrollmentId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['enrollments'] });
       notify.success('Enrollment status updated');
@@ -233,7 +233,7 @@ export function UserDetail() {
     },
   });
 
-  
+  // Delete Enrollment Mutation
   const deleteEnrollmentMutation = useMutation({
     mutationFn: enrollmentsApi.deleteEnrollment,
     onSuccess: () => {
@@ -246,15 +246,23 @@ export function UserDetail() {
     },
   });
 
-  
+  // Update User Mutation
   const updateUserMutation = useMutation({
     mutationFn: (data) => usersApi.updateUser(id, data),
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['user', id] });
       queryClient.invalidateQueries({ queryKey: ['users'] });
       queryClient.invalidateQueries({ queryKey: ['courses'] });
+      if (isSelf && updateAuthUser) {
+        updateAuthUser({
+          name: variables.name,
+          email: variables.email,
+          role: variables.role,
+        });
+      }
       toast.success('User profile updated successfully');
       setIsEditingUser(false);
+      setEditCurrentPassword('');
       setEditNewPassword('');
       setEditConfirmPassword('');
     },
@@ -296,6 +304,9 @@ export function UserDetail() {
       await usersApi.updateUser(id, { avatar: result.fileUrl });
       queryClient.invalidateQueries({ queryKey: ['user', id] });
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      if (isSelf && updateAuthUser) {
+        updateAuthUser({ avatar: result.fileUrl });
+      }
       toast.success('Profile picture updated successfully', { id: 'admin-avatar-upload' });
     } catch (err) {
       toast.error(err.message || 'Failed to upload profile picture', { id: 'admin-avatar-upload' });
@@ -388,7 +399,11 @@ export function UserDetail() {
       <input
         ref={avatarInputRef}
         type="file"
-        accept="image}
+        accept="image/*"
+        onChange={handleAvatarUpload}
+        className="hidden"
+      />
+      
       <div className="flex items-center justify-between border-b pb-4">
         <div className="flex items-center space-x-4">
           <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => navigate(-1)}>

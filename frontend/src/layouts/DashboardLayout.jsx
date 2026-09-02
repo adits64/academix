@@ -21,6 +21,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { ROLES, ROLE_LABELS } from '@/constants/roles';
 import { ROUTES } from '@/constants/routes';
 import ThemeToggle from '@/components/common/ThemeToggle';
+import UserAvatar from '@/components/common/UserAvatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -179,11 +180,7 @@ export function DashboardLayout() {
               onClick={() => navigate(profilePath)}
               className="flex items-center space-x-2 text-xs font-medium"
             >
-              {user?.avatar ? (
-                <img src={user.avatar} alt="Profile" className="h-5 w-5 rounded-full object-cover border border-primary/30" />
-              ) : (
-                <User className="h-4 w-4" />
-              )}
+              <UserAvatar user={user} size="xs" />
               <span className="hidden sm:inline">{user?.name || 'Profile'}</span>
             </Button>
 
