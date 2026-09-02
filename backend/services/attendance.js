@@ -3,7 +3,7 @@ import Course from "../models/course.js";
 import { NotFoundError } from "../errors/not-found.js";
 
 
-// CREATE ATTENDANCE
+
 export const create = async (data) => {
     const attendance = await Attendance.create(data);
 
@@ -11,8 +11,8 @@ export const create = async (data) => {
 };
 
 
-// GET ALL ATTENDANCE
-// ADMIN ONLY
+
+
 export const getAll = async () => {
     const attendances = await Attendance.find()
         .populate("studentId", "name email")
@@ -23,8 +23,8 @@ export const getAll = async () => {
 };
 
 
-// GET TEACHER'S ATTENDANCE
-// Returns attendance from all courses taught by this teacher
+
+
 export const getTeacherAttendance = async (teacherId) => {
 
     const courses = await Course.find({
@@ -44,8 +44,8 @@ export const getTeacherAttendance = async (teacherId) => {
 };
 
 
-// GET ATTENDANCE FOR ONE TEACHER'S COURSE + BATCH
-// Used by teacher dashboard
+
+
 export const getTeacherBatchAttendance = async (
     courseId,
     batchId,
@@ -74,8 +74,8 @@ export const getTeacherBatchAttendance = async (
 };
 
 
-// GET STUDENT'S OWN ATTENDANCE
-// STUDENT ONLY
+
+
 export const getMyAttendance = async (studentId) => {
 
     const attendances = await Attendance.find({
@@ -88,7 +88,7 @@ export const getMyAttendance = async (studentId) => {
 };
 
 
-// FIND ONE ATTENDANCE
+
 export const find = async (param, config, user) => {
 
     const attendance = await Attendance.findOne(
@@ -104,8 +104,8 @@ export const find = async (param, config, user) => {
     }
 
 
-    // TEACHER
-    // Can only see attendance from courses they teach
+    
+    
     if (user.role === "teacher") {
 
         if (
@@ -117,8 +117,8 @@ export const find = async (param, config, user) => {
     }
 
 
-    // STUDENT
-    // Can only see their own attendance
+    
+    
     if (user.role === "student") {
 
         if (
@@ -130,15 +130,15 @@ export const find = async (param, config, user) => {
     }
 
 
-    // ADMIN
-    // Can see any attendance
+    
+    
 
     return attendance;
 };
 
 
-// UPDATE ATTENDANCE
-// TEACHER ONLY
+
+
 export const update = async (id, data, user) => {
 
     const attendance = await Attendance.findById(id)
@@ -149,8 +149,8 @@ export const update = async (id, data, user) => {
     }
 
 
-    // Teacher can update only attendance
-    // from courses they teach
+    
+    
     if (
         user.role === "teacher" &&
         String(attendance.courseId.teacher) !==
@@ -160,8 +160,8 @@ export const update = async (id, data, user) => {
     }
 
 
-    // Only fields allowed by the validator
-    // are updated.
+    
+    
     if (data.date !== undefined) {
         attendance.date = data.date;
     }
@@ -173,7 +173,7 @@ export const update = async (id, data, user) => {
     await attendance.save();
 
 
-    // Populate the final response
+    
     await attendance.populate("studentId", "name email");
     await attendance.populate("markedBy", "name email");
 
@@ -181,8 +181,8 @@ export const update = async (id, data, user) => {
 };
 
 
-// DELETE ATTENDANCE
-// ADMIN ONLY
+
+
 export const destroy = async (id) => {
 
     const attendance = await Attendance.findByIdAndDelete(id);

@@ -32,20 +32,20 @@ export function MyCourses() {
   const [emailSubject, setEmailSubject] = useState('');
   const [emailMessage, setEmailMessage] = useState('');
 
-  // Fetch Teacher's Assigned Courses
+  
   const { data: courses, isLoading, isError, error } = useQuery({
     queryKey: ['courses', 'teacher'],
     queryFn: coursesApi.getMyCourses,
   });
 
-  // Fetch Batch Enrolled Students when batch is selected
+  
   const { data: studentsData, isLoading: studentsLoading } = useQuery({
     queryKey: ['batchStudents', selectedBatch?.courseId, selectedBatch?.batchId],
     queryFn: () => coursesApi.getBatchStudents(selectedBatch.courseId, selectedBatch.batchId),
     enabled: Boolean(selectedBatch?.courseId && selectedBatch?.batchId),
   });
 
-  // Email Mutation
+  
   const emailMutation = useMutation({
     mutationFn: (payload) => mailApi.sendNotice(payload),
     onSuccess: () => {
@@ -79,7 +79,7 @@ export function MyCourses() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">My Assigned Courses</h1>

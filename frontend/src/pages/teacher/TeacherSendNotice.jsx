@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Mail, Send, Loader2, BookOpen, Layers } from 'lucide-react';
 
 export function TeacherSendNotice() {
-  // Fetch Teacher's Assigned Courses
+  
   const { data: courses } = useQuery({
     queryKey: ['courses', 'teacher'],
     queryFn: coursesApi.getMyCourses,
@@ -43,7 +43,7 @@ export function TeacherSendNotice() {
   const selectedCourse = courseList.find((c) => c._id === selectedCourseId);
   const availableBatches = selectedCourse?.batches || [];
 
-  // Mutation
+  
   const sendMutation = useMutation({
     mutationFn: (data) => {
       if (!data.courseId || !data.batchId) {
@@ -73,7 +73,7 @@ export function TeacherSendNotice() {
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
-      {/* Header */}
+      {}
       <div className="border-b pb-4">
         <h1 className="text-2xl font-bold tracking-tight">Send Batch Notice</h1>
         <p className="text-xs sm:text-sm text-muted-foreground">

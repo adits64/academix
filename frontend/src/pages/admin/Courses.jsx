@@ -48,16 +48,16 @@ export function Courses() {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [deletingCourse, setDeletingCourse] = useState(null);
 
-  // Quick teacher assignment in details modal
+  
   const [isAssignTeacherOpen, setIsAssignTeacherOpen] = useState(false);
   const [selectedTeacherToAssign, setSelectedTeacherToAssign] = useState('');
 
-  // Quick notice modal state
+  
   const [noticeStudent, setNoticeStudent] = useState(null);
   const [noticeSubject, setNoticeSubject] = useState('');
   const [noticeMessage, setNoticeMessage] = useState('');
 
-  // Fetch Courses
+  
   const { data: coursesData, isLoading, isError, error } = useQuery({
     queryKey: ['courses'],
     queryFn: coursesApi.getAllCourses,
@@ -65,14 +65,14 @@ export function Courses() {
 
   const courses = coursesData?.courses || [];
 
-  // Fetch Enrollments for student lists
+  
   const { data: enrollmentsData } = useQuery({
     queryKey: ['enrollments'],
     queryFn: enrollmentsApi.getAllEnrollments,
   });
   const allEnrollments = Array.isArray(enrollmentsData) ? enrollmentsData : [];
 
-  // Fetch Teachers for dropdown selection
+  
   const { data: usersData } = useQuery({
     queryKey: ['users'],
     queryFn: usersApi.getAllUsers,
@@ -80,7 +80,7 @@ export function Courses() {
 
   const teachers = (usersData?.users || []).filter((u) => u.role === 'teacher');
 
-  // Helper to dynamically resolve teacher details even when backend returns unpopulated ID
+  
   const getTeacherForCourse = (courseOrTeacher) => {
     if (!courseOrTeacher) return null;
     const teacherRef = courseOrTeacher.teacher !== undefined ? courseOrTeacher.teacher : courseOrTeacher;
@@ -92,7 +92,7 @@ export function Courses() {
     return null;
   };
 
-  // Send Notice Mutation
+  
   const sendNoticeMutation = useMutation({
     mutationFn: mailApi.sendNotice,
     onSuccess: () => {
@@ -106,7 +106,7 @@ export function Courses() {
     },
   });
 
-  // Create Course Mutation
+  
   const createMutation = useMutation({
     mutationFn: coursesApi.createCourse,
     onSuccess: () => {
@@ -123,7 +123,7 @@ export function Courses() {
     },
   });
 
-  // Update Course Mutation
+  
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => coursesApi.updateCourse(id, data),
     onSuccess: (res) => {
@@ -142,7 +142,7 @@ export function Courses() {
     },
   });
 
-  // Assign / Change Teacher Mutation
+  
   const assignTeacherMutation = useMutation({
     mutationFn: ({ courseId, teacherId }) => coursesApi.updateCourse(courseId, { teacher: teacherId }),
     onSuccess: (res) => {
@@ -163,7 +163,7 @@ export function Courses() {
     },
   });
 
-  // Delete Course Mutation
+  
   const deleteMutation = useMutation({
     mutationFn: coursesApi.deleteCourse,
     onSuccess: () => {
@@ -183,7 +183,7 @@ export function Courses() {
     },
   });
 
-  // Form setup for Course + Dynamic Batches
+  
   const {
     register,
     handleSubmit,
@@ -225,7 +225,7 @@ export function Courses() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Courses & Batches</h1>
@@ -238,7 +238,7 @@ export function Courses() {
         </Button>
       </div>
 
-      {/* Search Bar */}
+      {}
       <div className="flex items-center justify-between bg-card p-3 rounded-xl border">
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -251,7 +251,7 @@ export function Courses() {
         </div>
       </div>
 
-      {/* Content State */}
+      {}
       {isLoading ? (
         <LoadingSpinner text="Loading courses..." />
       ) : isError ? (
@@ -265,7 +265,7 @@ export function Courses() {
           description={search ? `No courses match "${search}"` : 'No course programs have been added yet.'}
         />
       ) : (
-        /* Course Grid Cards */
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCourses.map((c) => (
             <Card key={c._id} className="flex flex-col justify-between border hover:border-primary/40 transition-all">

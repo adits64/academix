@@ -33,10 +33,10 @@ export function MarkAttendance() {
   const [selectedCourseId, setSelectedCourseId] = useState('');
   const [selectedBatchId, setSelectedBatchId] = useState('');
   const [attendanceDate, setAttendanceDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [attendanceMap, setAttendanceMap] = useState({}); // { studentId: 'present' | 'absent' | 'late' }
-  const [editingStudentId, setEditingStudentId] = useState(null); // studentId currently being edited inline
+  const [attendanceMap, setAttendanceMap] = useState({}); 
+  const [editingStudentId, setEditingStudentId] = useState(null); 
 
-  // Fetch Teacher's Courses
+  
   const { data: courses, isLoading: coursesLoading } = useQuery({
     queryKey: ['courses', 'teacher'],
     queryFn: coursesApi.getMyCourses,
@@ -47,14 +47,14 @@ export function MarkAttendance() {
   const availableBatches = selectedCourse?.batches || [];
   const selectedBatch = availableBatches.find((b) => b._id === selectedBatchId);
 
-  // Fetch Enrolled Students for selected course & batch
+  
   const { data: studentsData, isLoading: studentsLoading } = useQuery({
     queryKey: ['batchStudents', selectedCourseId, selectedBatchId],
     queryFn: () => coursesApi.getBatchStudents(selectedCourseId, selectedBatchId),
     enabled: Boolean(selectedCourseId && selectedBatchId),
   });
 
-  // Fetch Existing Attendance Records for this batch
+  
   const { data: batchAttendanceData, isLoading: attendanceLoading } = useQuery({
     queryKey: ['batchAttendance', selectedCourseId, selectedBatchId],
     queryFn: () => attendanceApi.getTeacherBatchAttendance(selectedCourseId, selectedBatchId),
@@ -64,14 +64,14 @@ export function MarkAttendance() {
   const students = Array.isArray(studentsData) ? studentsData : [];
   const batchAttendance = Array.isArray(batchAttendanceData) ? batchAttendanceData : [];
 
-  // Filter attendance records specifically for the selected date
+  
   const recordsForSelectedDate = batchAttendance.filter((att) => {
     if (!att?.date) return false;
     const attDateStr = new Date(att.date).toISOString().split('T')[0];
     return attDateStr === attendanceDate;
   });
 
-  // Map existing records by studentId
+  
   const existingMapByStudent = {};
   recordsForSelectedDate.forEach((att) => {
     const sId = att.studentId?._id || att.studentId;
@@ -82,7 +82,7 @@ export function MarkAttendance() {
 
   const hasSavedAttendanceForDate = recordsForSelectedDate.length > 0;
 
-  // Initialize or synchronize local status map when batch, date, or records change
+  
   useEffect(() => {
     const newMap = {};
     students.forEach((s) => {
@@ -98,7 +98,7 @@ export function MarkAttendance() {
     setAttendanceMap(newMap);
   }, [studentsData, batchAttendanceData, attendanceDate]);
 
-  // Submit New Attendance Mutation
+  
   const createMutation = useMutation({
     mutationFn: async (records) => {
       const promises = records.map((record) => attendanceApi.createAttendance(record));
@@ -114,7 +114,7 @@ export function MarkAttendance() {
     },
   });
 
-  // Update Individual Attendance Mutation
+  
   const updateMutation = useMutation({
     mutationFn: async ({ id, status }) => {
       return attendanceApi.updateAttendance(id, { status });
@@ -155,7 +155,7 @@ export function MarkAttendance() {
       return;
     }
 
-    // Filter out students who already have saved attendance records to prevent duplicates
+    
     const recordsToSubmit = [];
     students.forEach((s) => {
       const studentObj = s.studentId || s;
@@ -188,7 +188,7 @@ export function MarkAttendance() {
     updateMutation.mutate({ id: existingRecord._id, status: newStatus });
   };
 
-  // Real database-calculated stats
+  
   const presentCount = recordsForSelectedDate.filter((r) => r.status === 'present').length;
   const absentCount = recordsForSelectedDate.filter((r) => r.status === 'absent').length;
   const lateCount = recordsForSelectedDate.filter((r) => r.status === 'late').length;
@@ -196,7 +196,7 @@ export function MarkAttendance() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Mark Batch Attendance</h1>
@@ -206,10 +206,10 @@ export function MarkAttendance() {
         </div>
       </div>
 
-      {/* 3-Step Selection Filters Card */}
+      {}
       <Card className="p-4 border shadow-sm space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs sm:text-sm">
-          {/* Step 1: Select Course */}
+          {}
           <div className="space-y-1">
             <label className="font-medium flex items-center">
               <BookOpen className="h-3.5 w-3.5 mr-1 text-primary" /> Step 1: Course Program
@@ -290,7 +290,7 @@ export function MarkAttendance() {
         />
       ) : (
         <div className="space-y-6">
-          {/* Real Database Attendance Summary Banner */}
+          {}
           {hasSavedAttendanceForDate && (
             <Card className="bg-muted/40 border p-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -328,7 +328,7 @@ export function MarkAttendance() {
             </Card>
           )}
 
-          {/* Student Roster Table Card */}
+          {}
           <Card className="border shadow-sm overflow-hidden">
             <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b bg-muted/30">
               <div>

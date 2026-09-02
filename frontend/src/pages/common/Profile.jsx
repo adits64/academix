@@ -36,9 +36,9 @@ import {
   EyeOff,
 } from 'lucide-react';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Validation schemas
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 const profileSchema = z.object({
   name: z
     .string()
@@ -62,9 +62,9 @@ const passwordSchema = z
     path: ['confirmPassword'],
   });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Small reusable password field with show/hide toggle
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 function PasswordInput({ label, register, name, error, disabled }) {
   const [show, setShow] = useState(false);
   return (
@@ -96,20 +96,20 @@ function PasswordInput({ label, register, name, error, disabled }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Main Profile Component — shared by Student / Teacher / Admin
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 export function Profile() {
   const { user, updateUser } = useAuth();
   const avatarInputRef = useRef(null);
 
-  // UI state — page ALWAYS opens in VIEW mode
+  
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
-  // ── Profile form ──────────────────────────────────────────────────────────
+  
   const {
     register: regProfile,
     handleSubmit: submitProfile,
@@ -120,7 +120,7 @@ export function Profile() {
     defaultValues: { name: user?.name || '', email: user?.email || '' },
   });
 
-  // ── Password form ─────────────────────────────────────────────────────────
+  
   const {
     register: regPassword,
     handleSubmit: submitPassword,
@@ -131,21 +131,21 @@ export function Profile() {
     defaultValues: { currentPassword: '', newPassword: '', confirmPassword: '' },
   });
 
-  // ── Enter edit mode ───────────────────────────────────────────────────────
+  
   const enterEdit = () => {
     resetProfile({ name: user?.name || '', email: user?.email || '' });
     resetPassword({ currentPassword: '', newPassword: '', confirmPassword: '' });
     setIsEditing(true);
   };
 
-  // ── Cancel edit mode ──────────────────────────────────────────────────────
+  
   const cancelEdit = () => {
     resetProfile({ name: user?.name || '', email: user?.email || '' });
     resetPassword({ currentPassword: '', newPassword: '', confirmPassword: '' });
     setIsEditing(false);
   };
 
-  // ── Avatar upload ─────────────────────────────────────────────────────────
+  
   const handleAvatarChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -176,12 +176,12 @@ export function Profile() {
     }
   };
 
-  // ── Save profile changes ──────────────────────────────────────────────────
+  
   const onProfileSave = async (data) => {
     setIsSaving(true);
     try {
       const payload = { name: data.name.trim() };
-      // All roles may edit their own email; backend enforces uniqueness
+      
       if (data.email && data.email !== user?.email) {
         payload.email = data.email.trim().toLowerCase();
       }
@@ -196,12 +196,12 @@ export function Profile() {
     }
   };
 
-  // ── Change password ───────────────────────────────────────────────────────
+  
   const onPasswordSave = async (data) => {
     setIsChangingPassword(true);
     try {
-      // Backend validates the old password internally via its auth service.
-      // We send both fields; backend returns 400 if currentPassword is wrong.
+      
+      
       await usersApi.updateUser(user._id, {
         password: data.newPassword,
         currentPassword: data.currentPassword,
@@ -209,17 +209,17 @@ export function Profile() {
       toast.success('Password changed successfully');
       resetPassword({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err) {
-      // Surface backend message (e.g., "Current password is incorrect")
+      
       toast.error(err.message || 'Failed to change password. Please try again.');
     } finally {
       setIsChangingPassword(false);
     }
   };
 
-  // ─────────────────────────────────────────────────────────────────────────
+  
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      {/* Hidden file input for avatar */}
+      {}
       <input
         ref={avatarInputRef}
         type="file"
@@ -229,7 +229,7 @@ export function Profile() {
         disabled={isUploadingAvatar}
       />
 
-      {/* ── Page header ── */}
+      {}
       <div className="border-b pb-4 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Account Profile</h1>
@@ -252,16 +252,16 @@ export function Profile() {
         )}
       </div>
 
-      {/* ── Profile card ── */}
+      {}
       <Card className="shadow-lg border overflow-hidden">
-        {/* Banner */}
+        {}
         <div className="h-28 bg-gradient-to-r from-primary/80 to-primary/40" />
 
         <CardContent className="px-6 pb-6 relative pt-0">
-          {/* Avatar row */}
+          {}
           <div className="relative -top-12 flex flex-col sm:flex-row items-center sm:items-end justify-between border-b pb-6 gap-4">
             <div className="relative group">
-              {/* Avatar circle */}
+              {}
               <div className="h-24 w-24 rounded-full bg-card border-4 border-card shadow-xl ring-2 ring-primary/20 overflow-hidden flex items-center justify-center font-bold text-2xl text-primary">
                 {isUploadingAvatar ? (
                   <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded-full">

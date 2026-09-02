@@ -30,7 +30,7 @@ export function Landing() {
 
   return (
     <div className="flex flex-col space-y-16 py-10 md:py-16">
-      {/* Hero Section */}
+      {}
       <section className="container mx-auto px-4 text-center space-y-6">
         <Badge variant="outline" className="px-3 py-1 rounded-full text-xs font-semibold border-primary/30 text-primary bg-primary/5">
           <Sparkles className="h-3.5 w-3.5 mr-1 text-primary inline" /> Modern Institute & Course Management System

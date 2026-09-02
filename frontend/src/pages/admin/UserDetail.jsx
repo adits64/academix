@@ -60,7 +60,7 @@ export function UserDetail() {
 
   const isSelf = String(authUser?._id) === String(id);
 
-  // Edit user state
+  
   const [isEditingUser, setIsEditingUser] = useState(false);
   const [editName, setEditName] = useState('');
   const [editEmail, setEditEmail] = useState('');
@@ -83,19 +83,19 @@ export function UserDetail() {
     }
   };
 
-  // Enroll modal state (for students)
+  
   const [isEnrollOpen, setIsEnrollOpen] = useState(false);
   const [enrollCourseId, setEnrollCourseId] = useState('');
   const [enrollBatchId, setEnrollBatchId] = useState('');
   const [deletingEnrollment, setDeletingEnrollment] = useState(null);
 
-  // Assign course to teacher state (for teachers)
+  
   const [isAssignCourseOpen, setIsAssignCourseOpen] = useState(false);
   const [selectedCourseToAssign, setSelectedCourseToAssign] = useState('');
   const [unassigningCourse, setUnassigningCourse] = useState(null);
   const [reassignTeacherId, setReassignTeacherId] = useState('');
 
-  // Fetch user profile
+  
   const { data: userData, isLoading: userLoading, isError, error } = useQuery({
     queryKey: ['user', id],
     queryFn: () => usersApi.getUserById(id),
@@ -105,7 +105,7 @@ export function UserDetail() {
   const user = userData?.user;
   const role = user?.role;
 
-  // Fetch all users for other teachers list
+  
   const { data: usersData } = useQuery({
     queryKey: ['users'],
     queryFn: usersApi.getAllUsers,
@@ -113,7 +113,7 @@ export function UserDetail() {
   });
   const allOtherTeachers = (usersData?.users || []).filter((u) => u.role === 'teacher' && u._id !== id);
 
-  // Fetch courses (for teacher: assigned courses, for cross-referencing)
+  
   const { data: allCoursesData } = useQuery({
     queryKey: ['courses'],
     queryFn: coursesApi.getAllCourses,
@@ -121,28 +121,28 @@ export function UserDetail() {
   });
   const allCourses = allCoursesData?.courses || [];
 
-  // Fetch enrollments (for student: their enrollments)
+  
   const { data: allEnrollments } = useQuery({
     queryKey: ['enrollments'],
     queryFn: enrollmentsApi.getAllEnrollments,
     enabled: role === 'student',
   });
 
-  // Fetch attendance (admin-level access)
+  
   const { data: allAttendance } = useQuery({
     queryKey: ['attendance', 'admin'],
     queryFn: attendanceApi.getAllAttendance,
     enabled: Boolean(user),
   });
 
-  // Fetch notes (admin-level access)
+  
   const { data: allNotes } = useQuery({
     queryKey: ['notes', 'admin'],
     queryFn: notesApi.getAllNotes,
     enabled: Boolean(user),
   });
 
-  // Assign Course to Teacher Mutation
+  
   const assignCourseToTeacherMutation = useMutation({
     mutationFn: (courseId) => coursesApi.updateCourse(courseId, { teacher: id }),
     onSuccess: () => {
@@ -156,7 +156,7 @@ export function UserDetail() {
     },
   });
 
-  // Unassign Course from Teacher Mutation
+  
   const unassignCourseFromTeacherMutation = useMutation({
     mutationFn: ({ courseId, replacementTeacherId }) =>
       coursesApi.updateCourse(courseId, { teacher: replacementTeacherId }),
@@ -173,7 +173,7 @@ export function UserDetail() {
 
   const existingCourseIds = new Set(allCourses.map((c) => String(c._id)));
 
-  // Derive role-specific data
+  
   const teacherCourses = role === 'teacher'
     ? allCourses.filter((c) => c.teacher?._id === id || c.teacher === id)
     : [];
@@ -206,7 +206,7 @@ export function UserDetail() {
     return false;
   });
 
-  // Enroll in Course Mutation
+  
   const enrollMutation = useMutation({
     mutationFn: enrollmentsApi.createEnrollment,
     onSuccess: () => {
@@ -221,7 +221,7 @@ export function UserDetail() {
     },
   });
 
-  // Update Status Mutation (Cancel or Re-activate)
+  
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, data }) => enrollmentsApi.updateEnrollment(id, data),
     onSuccess: () => {
@@ -233,7 +233,7 @@ export function UserDetail() {
     },
   });
 
-  // Delete Enrollment Mutation (Remove from course)
+  
   const deleteEnrollmentMutation = useMutation({
     mutationFn: enrollmentsApi.deleteEnrollment,
     onSuccess: () => {
@@ -246,7 +246,7 @@ export function UserDetail() {
     },
   });
 
-  // Update User Mutation (Admin editing user)
+  
   const updateUserMutation = useMutation({
     mutationFn: (data) => usersApi.updateUser(id, data),
     onSuccess: () => {
@@ -350,7 +350,7 @@ export function UserDetail() {
   const selectedEnrollCourse = allCourses.find((c) => c._id === enrollCourseId);
   const availableEnrollBatches = selectedEnrollCourse?.batches || [];
 
-  // Attendance stats for students
+  
   const totalAtt = userAttendance.length;
   const presentCount = userAttendance.filter((a) => a.status === 'present').length;
   const absentCount = userAttendance.filter((a) => a.status === 'absent').length;
@@ -388,13 +388,7 @@ export function UserDetail() {
       <input
         ref={avatarInputRef}
         type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleAvatarUpload}
-        disabled={isUploadingAvatar}
-      />
-
-      {/* Back Button & Header */}
+        accept="image}
       <div className="flex items-center justify-between border-b pb-4">
         <div className="flex items-center space-x-4">
           <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => navigate(-1)}>
@@ -413,11 +407,11 @@ export function UserDetail() {
         )}
       </div>
 
-      {/* Profile Card */}
+      {}
       <Card className="overflow-hidden shadow-lg border">
         <div className="h-24 bg-gradient-to-r from-primary/70 to-primary/30" />
         <CardContent className="relative px-6 pb-6 pt-0">
-          {/* Avatar and Primary Header */}
+          {}
           <div className="relative -top-10 flex flex-col sm:flex-row items-center sm:items-end gap-4 border-b pb-6">
             <div className="relative group">
               <div className="h-20 w-20 rounded-full bg-card border-4 border-card flex items-center justify-center font-bold text-2xl text-primary shadow-xl ring-2 ring-primary/20 overflow-hidden relative">
@@ -467,7 +461,7 @@ export function UserDetail() {
             </Badge>
           </div>
 
-          {/* VIEW MODE */}
+          {}
           {!isEditingUser ? (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
               <div className="p-3 rounded-lg border bg-muted/20">

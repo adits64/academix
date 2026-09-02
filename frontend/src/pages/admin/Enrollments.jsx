@@ -38,20 +38,20 @@ export function Enrollments() {
   const [editingEnrollment, setEditingEnrollment] = useState(null);
   const [deletingEnrollment, setDeletingEnrollment] = useState(null);
 
-  // Fetch Enrollments
+  
   const { data: enrollments, isLoading, isError, error } = useQuery({
     queryKey: ['enrollments'],
     queryFn: enrollmentsApi.getAllEnrollments,
   });
 
-  // Fetch Students & Courses for creation dropdowns
+  
   const { data: usersData } = useQuery({ queryKey: ['users'], queryFn: usersApi.getAllUsers });
   const { data: coursesData } = useQuery({ queryKey: ['courses'], queryFn: coursesApi.getAllCourses });
 
   const students = (usersData?.users || []).filter((u) => u.role === 'student');
   const courses = coursesData?.courses || [];
 
-  // Form setup
+  
   const {
     register,
     handleSubmit,
@@ -67,7 +67,7 @@ export function Enrollments() {
   const selectedCourse = courses.find((c) => c._id === selectedCourseId);
   const availableBatches = selectedCourse?.batches || [];
 
-  // Create Mutation
+  
   const createMutation = useMutation({
     mutationFn: enrollmentsApi.createEnrollment,
     onSuccess: () => {
@@ -81,7 +81,7 @@ export function Enrollments() {
     },
   });
 
-  // Update Status Mutation
+  
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => enrollmentsApi.updateEnrollment(id, data),
     onSuccess: () => {
@@ -94,7 +94,7 @@ export function Enrollments() {
     },
   });
 
-  // Delete Mutation
+  
   const deleteMutation = useMutation({
     mutationFn: enrollmentsApi.deleteEnrollment,
     onSuccess: () => {
@@ -161,7 +161,7 @@ export function Enrollments() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Student Enrollments</h1>
@@ -174,7 +174,7 @@ export function Enrollments() {
         </Button>
       </div>
 
-      {/* Filter */}
+      {}
       <div className="flex items-center justify-between bg-card p-3 rounded-xl border">
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -188,7 +188,7 @@ export function Enrollments() {
         </div>
       </div>
 
-      {/* Content State */}
+      {}
       {isLoading ? (
         <LoadingSpinner text="Fetching enrollment records..." />
       ) : isError ? (
@@ -202,7 +202,7 @@ export function Enrollments() {
           description={search ? `No records match "${search}"` : 'No active student enrollments found.'}
         />
       ) : (
-        /* Enrollment Table */
+        
         <Card className="overflow-hidden border shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs sm:text-sm">

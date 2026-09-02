@@ -9,7 +9,7 @@ export function Settings() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      {/* Header */}
+      {}
       <div className="border-b pb-4">
         <h1 className="text-2xl font-bold tracking-tight">System Settings</h1>
         <p className="text-xs sm:text-sm text-muted-foreground">Configure application appearance theme, security preferences, and display settings.</p>
@@ -56,7 +56,7 @@ export function Settings() {
         </CardContent>
       </Card>
 
-      {/* Security Section */}
+      {}
       <Card className="border shadow-sm">
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-bold flex items-center">

@@ -5,11 +5,11 @@ import Enrollment from "../models/enrollment.js";
 import { NotFoundError } from "../errors/not-found.js";
 
 
-// =====================================================
-// CREATE NOTE
-// =====================================================
-// Teacher can create a note only for a course they teach
-// and a batch that belongs to that course.
+
+
+
+
+
 
 export const create = async (data, teacherId) => {
 
@@ -41,10 +41,10 @@ export const create = async (data, teacherId) => {
 };
 
 
-// =====================================================
-// GET ALL NOTES
-// =====================================================
-// ADMIN ONLY
+
+
+
+
 
 export const getAll = async () => {
 
@@ -56,10 +56,10 @@ export const getAll = async () => {
 };
 
 
-// =====================================================
-// GET TEACHER'S NOTES
-// =====================================================
-// Teacher can see only notes created by them.
+
+
+
+
 
 export const getTeacherNotes = async (teacherId) => {
 
@@ -72,10 +72,10 @@ export const getTeacherNotes = async (teacherId) => {
 };
 
 
-// =====================================================
-// GET STUDENT'S NOTES
-// =====================================================
-// Student can see notes for their active enrollments.
+
+
+
+
 
 export const getMyNotes = async (studentId) => {
 
@@ -101,12 +101,12 @@ export const getMyNotes = async (studentId) => {
 };
 
 
-// =====================================================
-// FIND ONE NOTE
-// =====================================================
-// Admin  → any note
-// Teacher → their own note
-// Student → note from their enrolled course + batch
+
+
+
+
+
+
 
 export const find = async (id, user) => {
 
@@ -119,13 +119,13 @@ export const find = async (id, user) => {
     }
 
 
-    // ADMIN
+    
     if (user.role === "admin") {
         return note;
     }
 
 
-    // TEACHER
+    
     if (user.role === "teacher") {
         const ownerId = note.teacherId?._id ? String(note.teacherId._id) : String(note.teacherId);
         if (ownerId !== String(user.userId)) {
@@ -136,7 +136,7 @@ export const find = async (id, user) => {
     }
 
 
-    // STUDENT
+    
     if (user.role === "student") {
         const courseId = note.courseId?._id ? note.courseId._id : note.courseId;
         const enrollment = await Enrollment.findOne({
@@ -147,7 +147,7 @@ export const find = async (id, user) => {
         });
 
         if (!enrollment) {
-            // Check if student has any active enrollment in this course
+            
             const courseEnrollment = await Enrollment.findOne({
                 studentId: user.userId,
                 courseId: courseId,
@@ -166,11 +166,11 @@ export const find = async (id, user) => {
 };
 
 
-// =====================================================
-// UPDATE NOTE
-// =====================================================
-// Teacher can update only their own note.
-// Course, batch and teacher cannot be changed.
+
+
+
+
+
 
 export const update = async (id, data, teacherId) => {
 
@@ -215,11 +215,11 @@ export const update = async (id, data, teacherId) => {
 };
 
 
-// =====================================================
-// DELETE NOTE
-// =====================================================
-// Admin → can delete any note
-// Teacher → can delete only their own note
+
+
+
+
+
 
 export const destroy = async (id, user) => {
 

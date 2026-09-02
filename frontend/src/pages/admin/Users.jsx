@@ -44,7 +44,7 @@ export function Users() {
   const [deletingUser, setDeletingUser] = useState(null);
   const [editCurrentPassword, setEditCurrentPassword] = useState('');
 
-  // Fetch Users
+  
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['users'],
     queryFn: usersApi.getAllUsers,
@@ -52,7 +52,7 @@ export function Users() {
 
   const users = data?.users || [];
 
-  // Create User Mutation
+  
   const createMutation = useMutation({
     mutationFn: usersApi.createUser,
     onSuccess: () => {
@@ -66,7 +66,7 @@ export function Users() {
     },
   });
 
-  // Update User Mutation
+  
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => usersApi.updateUser(id, data),
     onSuccess: () => {
@@ -79,7 +79,7 @@ export function Users() {
     },
   });
 
-  // Delete User Mutation
+  
   const deleteMutation = useMutation({
     mutationFn: usersApi.deleteUser,
     onSuccess: () => {
@@ -92,7 +92,7 @@ export function Users() {
     },
   });
 
-  // Forms
+  
   const createForm = useForm({
     resolver: zodResolver(createUserSchema),
     defaultValues: { name: '', email: '', password: '', role: 'student' },
@@ -113,7 +113,7 @@ export function Users() {
     });
   };
 
-  // Filtered Users
+  
   const filteredUsers = users.filter((u) => {
     const matchesSearch =
       u.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -137,7 +137,7 @@ export function Users() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">User Management</h1>
@@ -150,7 +150,7 @@ export function Users() {
         </Button>
       </div>
 
-      {/* Filters Bar */}
+      {}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-card p-3 rounded-xl border">
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -178,7 +178,7 @@ export function Users() {
         </div>
       </div>
 
-      {/* Content State */}
+      {}
       {isLoading ? (
         <LoadingSpinner text="Fetching institute users..." />
       ) : isError ? (
@@ -197,7 +197,7 @@ export function Users() {
           }
         />
       ) : (
-        /* Responsive User Table */
+        
         <Card className="overflow-hidden border shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs sm:text-sm">

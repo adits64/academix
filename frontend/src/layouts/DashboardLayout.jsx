@@ -32,7 +32,7 @@ export function DashboardLayout() {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Navigation Items by Role
+  
   const getNavItems = () => {
     switch (role) {
       case ROLES.ADMIN:
@@ -92,9 +92,9 @@ export function DashboardLayout() {
 
   return (
     <div className="min-h-screen flex bg-background text-foreground transition-colors duration-200">
-      {/* Desktop Sidebar */}
+      {}
       <aside className="hidden lg:flex w-64 flex-col border-r bg-card/60 backdrop-blur-sm sticky top-0 h-screen z-30">
-        {/* Brand */}
+        {}
         <div className="flex h-16 items-center px-6 border-b">
           <Link to={dashboardPath} className="flex items-center space-x-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold shadow-md">
@@ -107,7 +107,7 @@ export function DashboardLayout() {
           </Link>
         </div>
 
-        {/* Navigation Links */}
+        {}
         <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;

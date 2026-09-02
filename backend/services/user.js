@@ -14,11 +14,11 @@ export const getAll = async () => {
     return users;
 }
 
-// export const getUserById = async(_id) => {
-//     const user = await User.findById(_id, {password:0});
-//     if(!user) throw new NotFoundError("User not found");
-//     return user;
-// }
+
+
+
+
+
 
 export const find = async(param, config) => {
     const user = await User.findOne( param, config);
@@ -30,7 +30,7 @@ export const find = async(param, config) => {
 export const update = async (id , data, isAdmin = false, isSelf = false) => {
     let { role, currentPassword, ...dataToUpdate } = data;
 
-    // Check if password change is requested
+    
     if (dataToUpdate.password) {
         const requiresCurrentPassword = isSelf || !isAdmin;
         if (requiresCurrentPassword) {

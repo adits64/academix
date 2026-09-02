@@ -22,14 +22,14 @@ import {
 const NOTE_ROUTER = Router();
 
 
-// Authentication required for all note routes
+
 NOTE_ROUTER.use(authMiddleware);
 
 
-// =====================================================
-// CREATE NOTE
-// =====================================================
-// Teacher can upload notes for a course/batch they teach.
+
+
+
+
 
 NOTE_ROUTER.post(
     "/",
@@ -53,10 +53,10 @@ NOTE_ROUTER.post(
 );
 
 
-// =====================================================
-// GET ALL NOTES
-// =====================================================
-// Admin can see every note.
+
+
+
+
 
 NOTE_ROUTER.get(
     "/",
@@ -76,10 +76,10 @@ NOTE_ROUTER.get(
 );
 
 
-// =====================================================
-// GET TEACHER'S NOTES
-// =====================================================
-// Teacher can see only notes they created.
+
+
+
+
 
 NOTE_ROUTER.get(
     "/teacher",
@@ -101,10 +101,10 @@ NOTE_ROUTER.get(
 );
 
 
-// =====================================================
-// GET MY NOTES
-// =====================================================
-// Student sees notes from their enrolled course + batch.
+
+
+
+
 
 NOTE_ROUTER.get(
     "/my",
@@ -126,12 +126,12 @@ NOTE_ROUTER.get(
 );
 
 
-// =====================================================
-// DOWNLOAD NOTE FILE
-// =====================================================
-// Admin  → any note
-// Teacher → their own note
-// Student → note from their enrolled course + batch
+
+
+
+
+
+
 NOTE_ROUTER.get(
     "/:id/download",
     authorize("admin", "teacher", "student"),
@@ -146,11 +146,11 @@ NOTE_ROUTER.get(
                 return res.status(404).json({ message: "Note file not found" });
             }
 
-            // Robust fetch from Cloudinary storage
+            
             let response = await fetch(note.fileUrl);
             let contentType = response.headers.get("content-type") || note.fileType || "application/octet-stream";
 
-            // If direct fetch is restricted (e.g. 401 on Cloudinary PDF/raw uploads)
+            
             if (!response.ok) {
                 if (note.fileUrl.includes('/image/upload/') && note.fileUrl.endsWith('.pdf')) {
                     const pngUrl = note.fileUrl.replace(/\.pdf$/i, '.png');
@@ -207,12 +207,12 @@ NOTE_ROUTER.get(
 );
 
 
-// =====================================================
-// GET ONE NOTE
-// =====================================================
-// Admin  → any note
-// Teacher → their own note
-// Student → note from their enrolled course + batch
+
+
+
+
+
+
 
 NOTE_ROUTER.get(
     "/:id",
@@ -235,10 +235,10 @@ NOTE_ROUTER.get(
 );
 
 
-// =====================================================
-// UPDATE NOTE
-// =====================================================
-// Teacher can update only their own note.
+
+
+
+
 
 NOTE_ROUTER.patch(
     "/:id",
@@ -263,10 +263,10 @@ NOTE_ROUTER.patch(
 );
 
 
-// =====================================================
-// DELETE NOTE
-// =====================================================
-// Teacher can delete only their own note.
+
+
+
+
 
 NOTE_ROUTER.delete(
     "/:id",

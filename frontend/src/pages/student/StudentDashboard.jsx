@@ -47,19 +47,19 @@ export function StudentDashboard() {
     }
   };
 
-  // Fetch real student enrollments
+  
   const { data: enrollmentsData, isLoading: enrollmentsLoading } = useQuery({
     queryKey: ['enrollments', 'my'],
     queryFn: enrollmentsApi.getMyEnrollments,
   });
 
-  // Fetch real student attendance
+  
   const { data: attendanceData, isLoading: attendanceLoading } = useQuery({
     queryKey: ['attendance', 'my'],
     queryFn: attendanceApi.getMyAttendance,
   });
 
-  // Fetch real student study notes
+  
   const { data: notesData, isLoading: notesLoading } = useQuery({
     queryKey: ['notes', 'my'],
     queryFn: notesApi.getMyNotes,
@@ -69,19 +69,19 @@ export function StudentDashboard() {
   const attendances = Array.isArray(attendanceData) ? attendanceData : [];
   const notes = Array.isArray(notesData) ? notesData : [];
 
-  // Calculate Attendance presence rate
+  
   const totalSessions = attendances.length;
   const presentCount = attendances.filter((r) => r.status?.toLowerCase() === 'present').length;
   const presenceRate = totalSessions > 0 ? Math.round((presentCount / totalSessions) * 100) : 0;
 
-  // Calculate Total Tuition
+  
   const totalTuition = enrollments.reduce((sum, enr) => sum + (enr.courseId?.fee || 0), 0);
 
   const isLoading = enrollmentsLoading || attendanceLoading || notesLoading;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">

@@ -87,7 +87,7 @@ export const createAttendanceValidator = [
     body()
         .custom(async (value, { req }) => {
 
-            // Teacher must teach this course
+            
             const course = await Course.findOne({
                 _id: value.courseId,
                 teacher: req.user.userId
@@ -100,7 +100,7 @@ export const createAttendanceValidator = [
             }
 
 
-            // Student must be enrolled in this course + batch
+            
             const enrollment = await Enrollment.findOne({
                 studentId: value.studentId,
                 courseId: value.courseId,
@@ -115,7 +115,7 @@ export const createAttendanceValidator = [
             }
 
 
-            // Prevent duplicate attendance
+            
             const duplicate = await Attendance.findOne({
                 studentId: value.studentId,
                 courseId: value.courseId,
@@ -165,7 +165,7 @@ export const updateAttendanceValidator = [
             }
 
 
-            // Teacher must teach the attendance's course
+            
             const course = await Course.findOne({
                 _id: attendance.courseId,
                 teacher: req.user.userId
@@ -178,8 +178,8 @@ export const updateAttendanceValidator = [
             }
 
 
-            // If date is being changed,
-            // prevent duplicate attendance
+            
+            
             if (value.date) {
 
                 const duplicate = await Attendance.findOne({

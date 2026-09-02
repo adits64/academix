@@ -161,7 +161,7 @@ export const updateEnrollmentValidator = [
             const courseId = value.courseId || enrollment.courseId;
             const batchId = value.batchId || enrollment.batchId;
 
-            // Check batch belongs to the final course
+            
             const course = await Course.findOne({
                 _id: courseId,
                 "batches._id": batchId
@@ -173,7 +173,7 @@ export const updateEnrollmentValidator = [
                 );
             }
 
-            // Check duplicate enrollment
+            
             const duplicate = await Enrollment.findOne({
                 studentId,
                 courseId,

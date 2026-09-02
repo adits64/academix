@@ -19,7 +19,7 @@ export function PublicLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-200">
-      {/* Public Navbar */}
+      {}
       <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-md">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
           <Link to={isAuthenticated ? dashboardPath : ROUTES.PUBLIC.HOME} className="flex items-center space-x-2">

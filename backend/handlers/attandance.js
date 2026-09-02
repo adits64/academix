@@ -3,10 +3,10 @@ import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.js";
 import { authorize } from "../middleware/authorize.js";
 
-// import {
-//     createAttendanceValidator,
-//     updateAttendanceValidator
-// } from "../validators/attendance.js";
+
+
+
+
 import {createAttendanceValidator, updateAttendanceValidator} from "../validators/attendence.js"
 
 import {
@@ -24,14 +24,14 @@ import {
 const ATTENDANCE_ROUTER = Router();
 
 
-// Authentication required for every attendance route
+
 ATTENDANCE_ROUTER.use(authMiddleware);
 
 
-// =====================================================
-// CREATE ATTENDANCE
-// =====================================================
-// Teacher marks attendance for a student
+
+
+
+
 ATTENDANCE_ROUTER.post(
     "/",
     authorize("teacher"),
@@ -54,10 +54,10 @@ ATTENDANCE_ROUTER.post(
 );
 
 
-// =====================================================
-// GET ALL ATTENDANCE
-// =====================================================
-// Admin can see all attendance
+
+
+
+
 ATTENDANCE_ROUTER.get(
     "/",
     authorize("admin"),
@@ -76,10 +76,10 @@ ATTENDANCE_ROUTER.get(
 );
 
 
-// =====================================================
-// GET TEACHER'S ALL ATTENDANCE
-// =====================================================
-// Teacher can see attendance from their own courses
+
+
+
+
 ATTENDANCE_ROUTER.get(
     "/teacher",
     authorize("teacher"),
@@ -100,10 +100,10 @@ ATTENDANCE_ROUTER.get(
 );
 
 
-// =====================================================
-// GET TEACHER'S COURSE + BATCH ATTENDANCE
-// =====================================================
-// Used when teacher opens a particular course/batch
+
+
+
+
 ATTENDANCE_ROUTER.get(
     "/teacher/:courseId/:batchId",
     authorize("teacher"),
@@ -126,10 +126,10 @@ ATTENDANCE_ROUTER.get(
 );
 
 
-// =====================================================
-// GET MY ATTENDANCE
-// =====================================================
-// Student can see only their own attendance
+
+
+
+
 ATTENDANCE_ROUTER.get(
     "/my",
     authorize("student"),
@@ -150,12 +150,12 @@ ATTENDANCE_ROUTER.get(
 );
 
 
-// =====================================================
-// GET ONE ATTENDANCE
-// =====================================================
-// Admin  → any attendance
-// Teacher → only their course
-// Student → only their own attendance
+
+
+
+
+
+
 ATTENDANCE_ROUTER.get(
     "/:id",
     authorize("admin", "teacher", "student"),
@@ -180,10 +180,10 @@ ATTENDANCE_ROUTER.get(
 );
 
 
-// =====================================================
-// UPDATE ATTENDANCE
-// =====================================================
-// Teacher can update attendance from their own course
+
+
+
+
 ATTENDANCE_ROUTER.patch(
     "/:id",
     authorize("teacher"),
@@ -207,10 +207,10 @@ ATTENDANCE_ROUTER.patch(
 );
 
 
-// =====================================================
-// DELETE ATTENDANCE
-// =====================================================
-// Admin only
+
+
+
+
 ATTENDANCE_ROUTER.delete(
     "/:id",
     authorize("admin"),

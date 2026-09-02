@@ -15,16 +15,16 @@ import {
 const EMAIL_ROUTER = Router();
 
 
-// Authentication required
+
 EMAIL_ROUTER.use(authMiddleware);
 
 
-// =====================================================
-// SEND NOTICE / EMAIL
-// =====================================================
-// Admin  → any student / multiple students / batch
-// Teacher → students from their own courses
-// Student → not allowed
+
+
+
+
+
+
 
 EMAIL_ROUTER.post(
     "/",

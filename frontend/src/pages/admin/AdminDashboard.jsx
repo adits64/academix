@@ -16,7 +16,7 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 export function AdminDashboard() {
   const navigate = useNavigate();
 
-  // Fetch Stats Data
+  
   const { data: usersData, isLoading: usersLoading } = useQuery({ queryKey: ['users'], queryFn: usersApi.getAllUsers });
   const { data: coursesData, isLoading: coursesLoading } = useQuery({ queryKey: ['courses'], queryFn: coursesApi.getAllCourses });
   const { data: enrollmentsData, isLoading: enrollmentsLoading } = useQuery({ queryKey: ['enrollments'], queryFn: enrollmentsApi.getAllEnrollments });
@@ -51,7 +51,7 @@ export function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Admin Overview</h1>

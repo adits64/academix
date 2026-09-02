@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// When VITE_API_URL is empty, relative path uses Vite proxy (bypassing CORS)
+
 const API_BASE_URL = import.meta.env.VITE_API_URL !== undefined ? import.meta.env.VITE_API_URL : 'http://localhost:5000';
 
 const api = axios.create({
@@ -10,7 +10,7 @@ const api = axios.create({
   },
 });
 
-// Request Interceptor: Attach JWT Bearer token
+
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('academix_token');
@@ -22,7 +22,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor: Extract clean error messages & handle 401 unauthorized
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -46,14 +46,14 @@ api.interceptors.response.use(
       message = error.message || 'An unexpected error occurred';
     }
 
-    // Format error object for components/hooks
+    
     const normalizedError = new Error(message);
     normalizedError.status = error.response?.status;
     normalizedError.data = error.response?.data;
 
-    // Handle token expiration or unauthorized access
+    
     if (error.response?.status === 401) {
-      // Clear token if unauthorized, except for login route
+      
       const isLoginRequest = error.config?.url?.includes('/auth/login');
       if (!isLoginRequest && typeof window !== 'undefined') {
         localStorage.removeItem('academix_token');

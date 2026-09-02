@@ -24,7 +24,7 @@ const FEE_ROUTER = Router();
 
 FEE_ROUTER.use(authMiddleware);
 
-// Get my fees (Student only)
+
 FEE_ROUTER.get(
     "/my",
     authorize("student"),
@@ -38,7 +38,7 @@ FEE_ROUTER.get(
     }
 );
 
-// Get all fees (Admin only)
+
 FEE_ROUTER.get(
     "/",
     authorize("admin"),
@@ -52,7 +52,7 @@ FEE_ROUTER.get(
     }
 );
 
-// Get one fee
+
 FEE_ROUTER.get(
     "/:id",
     feeIdValidator,
@@ -62,7 +62,7 @@ FEE_ROUTER.get(
                 _id: req.params.id
             });
 
-            // Student can only access their own fee
+            
             if (req.user.role === "student") {
                 const studentId = fee.studentId?._id?.toString() || fee.studentId?.toString();
                 if (studentId !== req.user.userId.toString()) {
@@ -79,7 +79,7 @@ FEE_ROUTER.get(
     }
 );
 
-// Create fee (Admin only)
+
 FEE_ROUTER.post(
     "/",
     authorize("admin"),
@@ -95,7 +95,7 @@ FEE_ROUTER.post(
     }
 );
 
-// Update fee (Admin only)
+
 FEE_ROUTER.patch(
     "/:id",
     authorize("admin"),
@@ -115,7 +115,7 @@ FEE_ROUTER.patch(
     }
 );
 
-// Delete fee (Admin only)
+
 FEE_ROUTER.delete(
     "/:id",
     authorize("admin"),
@@ -131,7 +131,7 @@ FEE_ROUTER.delete(
     }
 );
 
-// Record payment (Admin only)
+
 FEE_ROUTER.patch(
     "/:id/payment",
     authorize("admin"),

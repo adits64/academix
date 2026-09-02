@@ -20,7 +20,7 @@ export function SendNotice() {
   const searchParams = new URLSearchParams(location.search);
   const initialStudentId = searchParams.get('studentId') || '';
 
-  // Recipient selection mode: 'individual', 'course', 'all'
+  
   const [recipientMode, setRecipientMode] = useState(initialStudentId ? 'individual' : 'course');
   const [selectedStudentId, setSelectedStudentId] = useState(initialStudentId);
   const [selectedCourseId, setSelectedCourseId] = useState('');
@@ -28,13 +28,13 @@ export function SendNotice() {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
 
-  // Fetch Courses
+  
   const { data: coursesData } = useQuery({
     queryKey: ['courses'],
     queryFn: coursesApi.getAllCourses,
   });
 
-  // Fetch Enrollments for enrolled students
+  
   const { data: enrollmentsData } = useQuery({
     queryKey: ['enrollments'],
     queryFn: enrollmentsApi.getAllEnrollments,
@@ -47,7 +47,7 @@ export function SendNotice() {
     return cid && (existingCourseIds.size === 0 || existingCourseIds.has(cid)) && e.studentId;
   });
 
-  // Unique enrolled students
+  
   const enrolledStudentsMap = new Map();
   enrollments.forEach((e) => {
     if (e.studentId?._id && !enrolledStudentsMap.has(e.studentId._id)) {
@@ -63,12 +63,12 @@ export function SendNotice() {
   const selectedCourse = courses.find((c) => c._id === selectedCourseId);
   const availableBatches = selectedCourse?.batches || [];
 
-  // Course enrolled students count
+  
   const courseEnrolledStudents = enrollments.filter(
     (e) => (e.courseId?._id || e.courseId) === selectedCourseId && (!selectedBatchId || String(e.batchId || e.batch?._id || e.batch) === String(selectedBatchId))
   );
 
-  // Send mutation
+  
   const sendMutation = useMutation({
     mutationFn: mailApi.sendNotice,
     onSuccess: () => {
@@ -136,7 +136,7 @@ export function SendNotice() {
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
-      {/* Header */}
+      {}
       <div className="border-b pb-4">
         <h1 className="text-2xl font-bold tracking-tight">Send Institute Email Notice</h1>
         <p className="text-xs sm:text-sm text-muted-foreground">
@@ -162,7 +162,7 @@ export function SendNotice() {
                 Select Recipient Target
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                {/* 1. Individual Student */}
+                {}
                 <button
                   type="button"
                   onClick={() => setRecipientMode('individual')}
@@ -251,7 +251,7 @@ export function SendNotice() {
               </div>
             )}
 
-            {/* 2. WHOLE COURSE SELECTOR */}
+            {}
             {recipientMode === 'course' && (
               <div className="p-3.5 rounded-lg border bg-muted/20 space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

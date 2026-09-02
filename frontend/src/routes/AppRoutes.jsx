@@ -1,21 +1,21 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
-// Layouts
+
 import PublicLayout from '@/layouts/PublicLayout';
 import AdminLayout from '@/layouts/AdminLayout';
 import TeacherLayout from '@/layouts/TeacherLayout';
 import StudentLayout from '@/layouts/StudentLayout';
 
-// Public Pages
+
 import Landing from '@/pages/public/Landing';
 import Login from '@/pages/public/Login';
 
-// Shared Pages
+
 import Profile from '@/pages/common/Profile';
 import Settings from '@/pages/common/Settings';
 
-// Admin Pages
+
 import AdminDashboard from '@/pages/admin/AdminDashboard';
 import Users from '@/pages/admin/Users';
 import UserDetail from '@/pages/admin/UserDetail';
@@ -26,14 +26,14 @@ import AdminNotes from '@/pages/admin/AdminNotes';
 import SendNotice from '@/pages/admin/SendNotice';
 import Fees from '@/pages/admin/Fees';
 
-// Teacher Pages
+
 import TeacherDashboard from '@/pages/teacher/TeacherDashboard';
 import MyCourses from '@/pages/teacher/MyCourses';
 import MarkAttendance from '@/pages/teacher/MarkAttendance';
 import TeacherNotes from '@/pages/teacher/TeacherNotes';
 import TeacherSendNotice from '@/pages/teacher/TeacherSendNotice';
 
-// Student Pages
+
 import StudentDashboard from '@/pages/student/StudentDashboard';
 import StudentCourses from '@/pages/student/StudentCourses';
 import StudentAttendance from '@/pages/student/StudentAttendance';
@@ -46,7 +46,7 @@ import { ROUTES } from '@/constants/routes';
 export function AppRoutes() {
   return (
     <Routes>
-      {/* Public Routes */}
+      {}
       <Route element={<PublicLayout />}>
         <Route path={ROUTES.PUBLIC.HOME} element={<Landing />} />
         <Route path={ROUTES.PUBLIC.LOGIN} element={<Login />} />

@@ -23,13 +23,13 @@ import {
 export function StudentAttendance() {
   const [selectedCourseFilter, setSelectedCourseFilter] = useState('all');
 
-  // Fetch student's attendance records
+  
   const { data: attendanceData, isLoading, isError, error } = useQuery({
     queryKey: ['attendance', 'my'],
     queryFn: attendanceApi.getMyAttendance,
   });
 
-  // Fetch student's enrolled courses for filtering
+  
   const { data: enrollmentsData } = useQuery({
     queryKey: ['enrollments', 'my'],
     queryFn: enrollmentsApi.getMyEnrollments,
@@ -38,13 +38,13 @@ export function StudentAttendance() {
   const attendances = Array.isArray(attendanceData) ? attendanceData : [];
   const enrollments = Array.isArray(enrollmentsData) ? enrollmentsData : [];
 
-  // Filtered records
+  
   const filteredRecords = attendances.filter((record) => {
     if (selectedCourseFilter === 'all') return true;
     return record.courseId?._id === selectedCourseFilter || record.courseId === selectedCourseFilter;
   });
 
-  // Calculate metrics
+  
   const totalSessions = filteredRecords.length;
   const presentCount = filteredRecords.filter((r) => r.status?.toLowerCase() === 'present').length;
   const absentCount = filteredRecords.filter((r) => r.status?.toLowerCase() === 'absent').length;

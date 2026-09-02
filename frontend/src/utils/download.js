@@ -1,20 +1,14 @@
 import { notesApi } from '@/api/notes';
 import { toast } from 'sonner';
 
-/**
- * Downloads a note file directly to the user's device.
- * Triggers native browser download without opening/redirecting to Cloudinary website.
- *
- * @param {Object} note - Note model object containing _id, title, fileName, fileUrl, etc.
- * @returns {Promise<boolean>} True if download initiated successfully, false otherwise.
- */
+
 export async function downloadNoteFile(note) {
   if (!note) {
     toast.error('Unable to download note');
     return false;
   }
 
-  // Derive an appropriate base filename
+  
   let fallbackName = note.fileName;
   if (!fallbackName) {
     const rawTitle = note.title ? note.title.trim().replace(/[/\\?%*:|"<>]/g, '_') : 'study_material';
@@ -25,7 +19,7 @@ export async function downloadNoteFile(note) {
     let blob = null;
     let finalFileName = fallbackName;
 
-    // Primary: Authenticated backend download endpoint
+    
     if (note._id) {
       try {
         const downloadRes = await notesApi.downloadNote(note._id);
@@ -44,11 +38,11 @@ export async function downloadNoteFile(note) {
       }
     }
 
-    // Secondary: Direct storage retrieval fallback
+    
     if (!blob && note.fileUrl) {
       let downloadUrl = note.fileUrl;
 
-      // Try with Cloudinary transformation if applicable
+      
       if (downloadUrl.includes('/image/upload/') && downloadUrl.endsWith('.pdf')) {
         downloadUrl = downloadUrl.replace(/\.pdf$/i, '.png');
         if (finalFileName.endsWith('.pdf')) {
@@ -72,7 +66,7 @@ export async function downloadNoteFile(note) {
       throw new Error('Empty file content received');
     }
 
-    // Trigger browser native download via temporary object URL
+    
     const blobUrl = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = blobUrl;
@@ -82,7 +76,7 @@ export async function downloadNoteFile(note) {
     link.click();
     document.body.removeChild(link);
 
-    // Revoke object URL after delay to free memory
+    
     setTimeout(() => {
       window.URL.revokeObjectURL(blobUrl);
     }, 2000);

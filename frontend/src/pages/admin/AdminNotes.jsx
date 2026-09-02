@@ -41,13 +41,13 @@ export function AdminNotes() {
     }
   };
 
-  // Fetch All Notes
+  
   const { data: notesData, isLoading, isError, error } = useQuery({
     queryKey: ['notes', 'admin'],
     queryFn: notesApi.getAllNotes,
   });
 
-  // Fetch Courses to filter out deleted courses
+  
   const { data: coursesData } = useQuery({
     queryKey: ['courses'],
     queryFn: coursesApi.getAllCourses,
@@ -62,7 +62,7 @@ export function AdminNotes() {
     return cid && (existingCourseIds.size === 0 || existingCourseIds.has(cid));
   });
 
-  // Delete Mutation
+  
   const deleteMutation = useMutation({
     mutationFn: notesApi.deleteNote,
     onSuccess: () => {
@@ -83,7 +83,7 @@ export function AdminNotes() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Study Notes & Materials</h1>
@@ -93,7 +93,7 @@ export function AdminNotes() {
         </div>
       </div>
 
-      {/* Search Filter */}
+      {}
       <div className="flex items-center justify-between bg-card p-3 rounded-xl border">
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -107,7 +107,7 @@ export function AdminNotes() {
         </div>
       </div>
 
-      {/* Content State */}
+      {}
       {isLoading ? (
         <LoadingSpinner text="Fetching study materials..." />
       ) : isError ? (
@@ -121,7 +121,7 @@ export function AdminNotes() {
           description={search ? `No materials match "${search}"` : 'No study notes have been uploaded yet.'}
         />
       ) : (
-        /* Notes Cards Grid */
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredNotes.map((n) => (
             <Card key={n._id} className="flex flex-col justify-between border hover:border-primary/40 transition-all">

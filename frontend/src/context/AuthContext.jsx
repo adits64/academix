@@ -17,7 +17,7 @@ export function AuthProvider({ children }) {
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  // Synchronize state on initial load & token expiration check
+  
   useEffect(() => {
     const initializeAuth = async () => {
       const storedToken = localStorage.getItem(TOKEN_KEY);
@@ -27,7 +27,7 @@ export function AuthProvider({ children }) {
         } else {
           const decoded = decodeJwt(storedToken);
           if (decoded && !user) {
-            // Fetch full user details from database for all roles
+            
             try {
               const res = await usersApi.getUserById(decoded.userId);
               if (res?.user) {
@@ -59,7 +59,7 @@ export function AuthProvider({ children }) {
     try {
       setIsLoading(true);
       const res = await authApi.login(credentials);
-      // Response might be a raw token string or object { accessToken } or { token }
+      
       const jwtToken = typeof res === 'string' ? res : res?.accessToken || res?.token;
 
       if (!jwtToken) {
@@ -76,14 +76,14 @@ export function AuthProvider({ children }) {
 
       let userInfo = { _id: decoded.userId, role: decoded.role, email: credentials.email };
 
-      // Fetch user profile from database
+      
       try {
         const userRes = await usersApi.getUserById(decoded.userId);
         if (userRes?.user) {
           userInfo = userRes.user;
         }
       } catch (e) {
-        // Fallback to token decoded info
+        
       }
 
       localStorage.setItem(USER_KEY, JSON.stringify(userInfo));

@@ -49,7 +49,7 @@ export function Login() {
       const user = await login(data);
       const targetRole = user?.role;
 
-      // Determine redirect path based on role or state
+      
       const from = location.state?.from?.pathname;
       if (from) {
         navigate(from, { replace: true });

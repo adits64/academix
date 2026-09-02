@@ -5,32 +5,32 @@ import Enrollment from "../models/enrollment.js";
 import { NotFoundError } from "../errors/not-found.js";
 import { ValidationError } from "../errors/validation.js";
 
-// import {sendEmail} from "../utils/mail.js";
+
 
 import { sendEmail } from "../utils/mail.js";
-// =====================================================
-// SEND EMAIL
-// =====================================================
-// Admin:
-//   - Can email any students
-//   - Can email an entire course + batch
-//
-// Teacher:
-//   - Can email only students from their own course + batch
-//
-// Student:
-//   - Cannot send emails
-//   - Blocked by authorize middleware
-// =====================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 export const sendNotice = async (data, user) => {
 
     let students = [];
 
 
-    // =================================================
-    // SEND TO SPECIFIC STUDENTS
-    // =================================================
+    
+    
+    
 
     if (data.studentIds) {
 
@@ -47,7 +47,7 @@ export const sendNotice = async (data, user) => {
         }
 
 
-        // Make sure every requested student exists
+        
         if (students.length !== data.studentIds.length) {
             throw new NotFoundError(
                 "One or more students were not found"
@@ -55,9 +55,9 @@ export const sendNotice = async (data, user) => {
         }
 
 
-        // ---------------------------------------------
-        // TEACHER AUTHORIZATION
-        // ---------------------------------------------
+        
+        
+        
 
         if (user.role === "teacher") {
 
@@ -128,9 +128,9 @@ export const sendNotice = async (data, user) => {
     }
 
 
-    // =================================================
-    // SEND TO ENTIRE COURSE + BATCH
-    // =================================================
+    
+    
+    
 
     if (data.courseId && data.batchId) {
 
@@ -146,7 +146,7 @@ export const sendNotice = async (data, user) => {
         }
 
 
-        // Check batch belongs to course
+        
         const batch = course.batches.id(
             data.batchId
         );
@@ -159,9 +159,9 @@ export const sendNotice = async (data, user) => {
         }
 
 
-        // ---------------------------------------------
-        // TEACHER AUTHORIZATION
-        // ---------------------------------------------
+        
+        
+        
 
         if (user.role === "teacher") {
 
@@ -176,9 +176,9 @@ export const sendNotice = async (data, user) => {
         }
 
 
-        // ---------------------------------------------
-        // FIND ENROLLED STUDENTS
-        // ---------------------------------------------
+        
+        
+        
 
         const enrollments = await Enrollment.find({
             courseId: data.courseId,
@@ -213,9 +213,9 @@ export const sendNotice = async (data, user) => {
     }
 
 
-    // =================================================
-    // REMOVE DUPLICATE EMAIL ADDRESSES
-    // =================================================
+    
+    
+    
 
     const recipients = [
         ...new Set(
@@ -233,9 +233,9 @@ export const sendNotice = async (data, user) => {
     }
 
 
-    // =================================================
-    // SEND EMAIL
-    // =================================================
+    
+    
+    
 
     const result = await sendEmail({
         bcc: recipients,

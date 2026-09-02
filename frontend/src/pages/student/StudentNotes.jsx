@@ -37,13 +37,13 @@ export function StudentNotes() {
     }
   };
 
-  // Fetch available study notes for enrolled batches
+  
   const { data: notesData, isLoading, isError, error } = useQuery({
     queryKey: ['notes', 'my'],
     queryFn: notesApi.getMyNotes,
   });
 
-  // Fetch enrolled courses for filter dropdown
+  
   const { data: enrollmentsData } = useQuery({
     queryKey: ['enrollments', 'my'],
     queryFn: enrollmentsApi.getMyEnrollments,
@@ -52,7 +52,7 @@ export function StudentNotes() {
   const notes = Array.isArray(notesData) ? notesData : [];
   const enrollments = Array.isArray(enrollmentsData) ? enrollmentsData : [];
 
-  // Filter notes by search keyword and selected course
+  
   const filteredNotes = notes.filter((n) => {
     const matchesCourse =
       selectedCourseFilter === 'all' ||
@@ -70,7 +70,7 @@ export function StudentNotes() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Study Materials & Notes</h1>

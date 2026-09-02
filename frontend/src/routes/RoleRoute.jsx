@@ -8,7 +8,7 @@ export function RoleRoute({ allowedRoles, children }) {
   const { role } = useAuth();
 
   if (!role || !allowedRoles.includes(role)) {
-    // Redirect to proper role dashboard
+    
     if (role === ROLES.ADMIN) return <Navigate to={ROUTES.ADMIN.DASHBOARD} replace />;
     if (role === ROLES.TEACHER) return <Navigate to={ROUTES.TEACHER.DASHBOARD} replace />;
     if (role === ROLES.STUDENT) return <Navigate to={ROUTES.STUDENT.DASHBOARD} replace />;

@@ -22,13 +22,13 @@ import {
 } from 'lucide-react';
 
 export function StudentFees() {
-  // Fetch logged-in student's fees
+  
   const { data: feesData, isLoading: feesLoading, isError: feesIsError, error: feesError } = useQuery({
     queryKey: ['fees', 'my'],
     queryFn: feesApi.getMyFees,
   });
 
-  // Fetch logged-in student's enrollments (for batch/course context fallback)
+  
   const { data: enrollmentsData, isLoading: enrollmentsLoading } = useQuery({
     queryKey: ['enrollments', 'my'],
     queryFn: enrollmentsApi.getMyEnrollments,
@@ -37,10 +37,10 @@ export function StudentFees() {
   const enrollments = Array.isArray(enrollmentsData) ? enrollmentsData : [];
   const rawFees = Array.isArray(feesData) ? feesData : [];
 
-  // Build unified fee list
+  
   const feeListMap = new Map();
 
-  // 1. Add all persisted fee records from backend
+  
   rawFees.forEach((fee) => {
     const courseId = fee.courseId?._id || fee.courseId;
     const key = String(courseId);
@@ -58,7 +58,7 @@ export function StudentFees() {
     });
   });
 
-  // 2. Add enrolled courses that might not have a fee document yet
+  
   enrollments.forEach((enr) => {
     if (!enr.courseId) return;
     const courseId = enr.courseId?._id || enr.courseId;
@@ -103,7 +103,7 @@ export function StudentFees() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Fees & Financial Status</h1>

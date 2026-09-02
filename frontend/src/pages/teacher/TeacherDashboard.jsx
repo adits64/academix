@@ -14,7 +14,7 @@ import { BookOpen, Calendar, FileText, Mail, ArrowRight, Layers, Users } from 'l
 export function TeacherDashboard() {
   const navigate = useNavigate();
 
-  // Real backend queries
+  
   const { data: courses, isLoading: coursesLoading } = useQuery({
     queryKey: ['courses', 'teacher'],
     queryFn: coursesApi.getMyCourses,

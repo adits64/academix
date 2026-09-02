@@ -1,8 +1,4 @@
-/**
- * Cloudinary file upload helper for Academix
- * Reads VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET from env.
- * Never exposes private API secrets in frontend code.
- */
+
 export async function uploadFileToCloudinary(file) {
   if (!file) {
     throw new Error('No file provided for upload');
@@ -11,7 +7,7 @@ export async function uploadFileToCloudinary(file) {
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
-  // If Cloudinary environment variables are configured, upload to Cloudinary API
+  
   if (cloudName && uploadPreset) {
     const formData = new FormData();
     formData.append('file', file);
@@ -35,7 +31,7 @@ export async function uploadFileToCloudinary(file) {
     };
   }
 
-  // Graceful fallback when Cloudinary credentials will be supplied later
+  
   const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
   return {
     fileUrl: `https://res.cloudinary.com/academix/raw/upload/v${Date.now()}/${sanitizedName}`,

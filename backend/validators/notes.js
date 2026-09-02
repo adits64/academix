@@ -7,9 +7,9 @@ import { ValidationError } from "../errors/validation.js";
 import { validate } from "./validate.js";
 
 
-// =====================================================
-// CREATE NOTE
-// =====================================================
+
+
+
 
 export const createNoteValidator = [
 
@@ -58,9 +58,9 @@ export const createNoteValidator = [
         .withMessage("Invalid batch ID"),
 
 
-    // =================================================
-    // TEACHER + COURSE + BATCH AUTHORIZATION
-    // =================================================
+    
+    
+    
 
     body()
         .custom(async (value, { req }) => {
@@ -77,7 +77,7 @@ export const createNoteValidator = [
             }
 
 
-            // Make sure the batch belongs to this course
+            
             const batch = course.batches.id(
                 value.batchId
             );
@@ -96,9 +96,9 @@ export const createNoteValidator = [
 ];
 
 
-// =====================================================
-// UPDATE NOTE
-// =====================================================
+
+
+
 
 export const updateNoteValidator = [
 
@@ -137,7 +137,7 @@ export const updateNoteValidator = [
         .withMessage("File type cannot be empty"),
 
 
-    // These relationships cannot be changed
+    
     body("courseId")
         .not()
         .exists()
@@ -156,9 +156,9 @@ export const updateNoteValidator = [
         .withMessage("Teacher cannot be changed"),
 
 
-    // =================================================
-    // TEACHER OWNERSHIP
-    // =================================================
+    
+    
+    
 
     body()
         .custom(async (value, { req }) => {

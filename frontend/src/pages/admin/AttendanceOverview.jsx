@@ -38,24 +38,24 @@ export function AttendanceOverview() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [search, setSearch] = useState('');
 
-  // Live Calendar & Tracking State
+  
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [activeCourseId, setActiveCourseId] = useState('');
   const [activeBatchId, setActiveBatchId] = useState('');
 
-  // Fetch Attendance Records (Admin-level)
+  
   const { data: attendanceData, isLoading, isError, error } = useQuery({
     queryKey: ['attendance', 'admin'],
     queryFn: attendanceApi.getAllAttendance,
   });
 
-  // Fetch Courses
+  
   const { data: coursesData } = useQuery({
     queryKey: ['courses'],
     queryFn: coursesApi.getAllCourses,
   });
 
-  // Fetch Enrollments
+  
   const { data: enrollmentsData } = useQuery({
     queryKey: ['enrollments'],
     queryFn: enrollmentsApi.getAllEnrollments,
@@ -64,7 +64,7 @@ export function AttendanceOverview() {
   const courses = coursesData?.courses || [];
   const existingCourseIds = new Set(courses.map((c) => String(c._id)));
 
-  // Normalize attendance records & filter out any orphaned records from deleted courses or deleted students
+  
   const rawRecords = Array.isArray(attendanceData)
     ? attendanceData
     : Array.isArray(attendanceData?.attendances)
@@ -84,13 +84,13 @@ export function AttendanceOverview() {
     return cid && existingCourseIds.has(cid) && e.studentId;
   });
 
-  // Default active course and batch if not chosen yet
+  
   const currentCourse = courses.find((c) => c._id === activeCourseId) || courses[0];
   const currentBatch =
     currentCourse?.batches?.find((b) => String(b._id) === String(activeBatchId)) ||
     currentCourse?.batches?.[0];
 
-  // Helper to resolve batch name
+  
   const getBatchName = (r) => {
     if (r.batchId?.name) return r.batchId.name;
     if (r.batch?.name) return r.batch.name;
@@ -108,7 +108,7 @@ export function AttendanceOverview() {
     return 'Morning Batch A';
   };
 
-  // Filtered attendance records for Log Table
+  
   const filteredRecords = records.filter((r) => {
     const courseId = r.courseId?._id || r.courseId;
     const batchId = String(r.batchId?._id || r.batchId || r.batch?._id || r.batch);
@@ -120,16 +120,16 @@ export function AttendanceOverview() {
     return matchesCourse && matchesBatch && matchesStatus && matchesSearch;
   });
 
-  // Stats calculation
+  
   const total = records.length;
   const presentCount = records.filter((r) => r.status === 'present').length;
   const absentCount = records.filter((r) => r.status === 'absent').length;
   const presentPercentage = total > 0 ? Math.round((presentCount / total) * 100) : 0;
 
-  // Active batches calculation
+  
   const totalActiveBatches = courses.reduce((acc, c) => acc + (c.batches?.length || 0), 0);
 
-  // Live class timeline calculation
+  
   const getTimelineProgress = (startDateStr, endDateStr) => {
     if (!startDateStr || !endDateStr) return { percentage: 0, status: 'Not Scheduled', daysLeft: 0, totalDays: 0 };
     const start = new Date(startDateStr).getTime();
@@ -154,7 +154,7 @@ export function AttendanceOverview() {
     ? getTimelineProgress(currentBatch.startDate, currentBatch.endDate)
     : null;
 
-  // Enrolled students in currently active course & batch for Live Inspection
+  
   const batchStudents = allEnrollments.filter((e) => {
     const matchCourse = (e.courseId?._id || e.courseId) === currentCourse?._id;
     const matchBatch = !currentBatch || String(e.batchId || e.batch?._id || e.batch) === String(currentBatch._id);
@@ -171,7 +171,7 @@ export function AttendanceOverview() {
     return match ? { status: match.status, markedBy: match.markedBy?.name || 'Instructor' } : null;
   };
 
-  // Student overall attendance percentage in this course
+  
   const getStudentCourseAttendanceRate = (studentId) => {
     const studentCourseRecords = records.filter(
       (r) =>
@@ -200,7 +200,7 @@ export function AttendanceOverview() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Attendance & Live Class Tracking</h1>
@@ -210,7 +210,7 @@ export function AttendanceOverview() {
         </div>
       </div>
 
-      {/* Summary Statistics */}
+      {}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">

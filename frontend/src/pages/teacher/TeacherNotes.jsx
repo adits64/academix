@@ -52,13 +52,13 @@ export function TeacherNotes() {
     }
   };
 
-  // Fetch Teacher's Assigned Courses for dropdown
+  
   const { data: courses, isLoading: coursesLoading } = useQuery({
     queryKey: ['courses', 'teacher'],
     queryFn: coursesApi.getMyCourses,
   });
 
-  // Fetch Teacher's Uploaded Notes from database
+  
   const { data: notesData, isLoading, isError, error } = useQuery({
     queryKey: ['notes', 'teacher'],
     queryFn: notesApi.getTeacherNotes,
@@ -67,7 +67,7 @@ export function TeacherNotes() {
   const courseList = Array.isArray(courses) ? courses : [];
   const notes = Array.isArray(notesData) ? notesData : [];
 
-  // Form setup
+  
   const {
     register,
     handleSubmit,
@@ -83,7 +83,7 @@ export function TeacherNotes() {
   const selectedCourse = courseList.find((c) => c._id === selectedCourseId);
   const availableBatches = selectedCourse?.batches || [];
 
-  // Delete Mutation
+  
   const deleteMutation = useMutation({
     mutationFn: notesApi.deleteNote,
     onSuccess: () => {
@@ -113,10 +113,10 @@ export function TeacherNotes() {
     try {
       setIsUploading(true);
 
-      // Step 1: Upload file to Cloudinary (or fallback architecture)
+      
       const uploadResult = await uploadFileToCloudinary(selectedFile);
 
-      // Step 2: Send metadata to Academix Backend
+      
       const notePayload = {
         title: formData.title,
         description: formData.description || '',
@@ -129,7 +129,7 @@ export function TeacherNotes() {
 
       await notesApi.createNote(notePayload);
 
-      // Invalidate and refresh query cache
+      
       queryClient.invalidateQueries({ queryKey: ['notes'] });
       toast.success('Material uploaded successfully');
       setIsCreateOpen(false);
@@ -145,7 +145,7 @@ export function TeacherNotes() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Teacher Study Notes</h1>
@@ -158,7 +158,7 @@ export function TeacherNotes() {
         </Button>
       </div>
 
-      {/* Content State */}
+      {}
       {isLoading ? (
         <LoadingSpinner text="Fetching your study notes..." />
       ) : isError ? (
@@ -177,7 +177,7 @@ export function TeacherNotes() {
           }
         />
       ) : (
-        /* Notes Cards Grid */
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {notes.map((n) => (
             <Card key={n._id} className="flex flex-col justify-between border hover:border-primary/40 transition-all">

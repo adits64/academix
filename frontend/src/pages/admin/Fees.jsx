@@ -40,42 +40,42 @@ export function Fees() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  // Modal States
+  
   const [isAddFeeOpen, setIsAddFeeOpen] = useState(false);
   const [recordingPayment, setRecordingPayment] = useState(null);
   const [adjustingFeeRecord, setAdjustingFeeRecord] = useState(null);
   const [viewingReceipt, setViewingReceipt] = useState(null);
 
-  // Form Fields for Add / Collect Fee Payment Modal
+  
   const [selectedTargetId, setSelectedTargetId] = useState('');
   const [addPaymentAmount, setAddPaymentAmount] = useState('');
   const [addPaymentMethod, setAddPaymentMethod] = useState('Cash');
   const [addPaymentDate, setAddPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [addPaymentRemarks, setAddPaymentRemarks] = useState('');
 
-  // Form Fields for Record Payment Modal (Row)
+  
   const [rowPaymentAmount, setRowPaymentAmount] = useState('');
   const [rowPaymentMethod, setRowPaymentMethod] = useState('Cash');
   const [rowPaymentDate, setRowPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [rowPaymentRemarks, setRowPaymentRemarks] = useState('');
 
-  // Form Fields for Fee Adjustment Modal
+  
   const [customTotalFee, setCustomTotalFee] = useState('');
   const [adjustReason, setAdjustReason] = useState('');
 
-  // Fetch Fees from Backend
+  
   const { data: feesData, isLoading: feesLoading, isError: feesIsError, error: feesError } = useQuery({
     queryKey: ['fees'],
     queryFn: feesApi.getAllFees,
   });
 
-  // Fetch Enrollments (for student/course linking and batch names)
+  
   const { data: enrollmentsData, isLoading: enrollmentsLoading } = useQuery({
     queryKey: ['enrollments'],
     queryFn: enrollmentsApi.getAllEnrollments,
   });
 
-  // Fetch Courses
+  
   const { data: coursesData, isLoading: coursesLoading } = useQuery({
     queryKey: ['courses'],
     queryFn: coursesApi.getAllCourses,
@@ -85,7 +85,7 @@ export function Fees() {
   const rawEnrollments = Array.isArray(enrollmentsData) ? enrollmentsData : [];
   const rawFees = Array.isArray(feesData) ? feesData : [];
 
-  // Helper to resolve batch name
+  
   const getBatchName = (studentId, courseId) => {
     const sId = String(studentId?._id || studentId || '');
     const cId = String(courseId?._id || courseId || '');
@@ -107,10 +107,10 @@ export function Fees() {
     return 'Morning Batch A';
   };
 
-  // Build unified fee record list from backend fee records and enrollments
+  
   const feeRecordsMap = new Map();
 
-  // 1. Add all backend fee records
+  
   rawFees.forEach((fee) => {
     const studentId = fee.studentId?._id || fee.studentId;
     const courseId = fee.courseId?._id || fee.courseId;
@@ -134,7 +134,7 @@ export function Fees() {
     });
   });
 
-  // 2. Include active enrollments that may not have explicit fee documents yet
+  
   rawEnrollments.forEach((enr) => {
     if (!enr.studentId || !enr.courseId) return;
     const studentId = enr.studentId?._id || enr.studentId;
@@ -165,13 +165,13 @@ export function Fees() {
 
   const feeRecords = Array.from(feeRecordsMap.values());
 
-  // Aggregate Calculations
+  
   const totalReceivable = feeRecords.reduce((sum, r) => sum + r.totalFee, 0);
   const totalPaid = feeRecords.reduce((sum, r) => sum + r.paidAmount, 0);
   const totalDue = feeRecords.reduce((sum, r) => sum + r.dueAmount, 0);
   const collectionRate = totalReceivable > 0 ? Math.round((totalPaid / totalReceivable) * 100) : 0;
 
-  // Filtered fee records
+  
   const filteredRecords = feeRecords.filter((r) => {
     const studentName = r.student?.name || '';
     const courseName = r.course?.name || '';
@@ -182,13 +182,13 @@ export function Fees() {
     return matchesSearch && matchesStatus;
   });
 
-  // Mutations
+  
   const recordPaymentMutation = useMutation({
     mutationFn: async ({ record, amount }) => {
       if (record.isPersisted && record.feeId) {
         return await feesApi.recordPayment(record.feeId, amount);
       } else {
-        // Create fee record with the initial payment
+        
         const studentId = record.student?._id || record.student;
         const courseId = record.course?._id || record.course;
         return await feesApi.createFee({
@@ -201,12 +201,12 @@ export function Fees() {
     },
     onSuccess: (_, variables) => {
       notify.success(`Payment of ${formatCurrency(variables.amount)} recorded for ${variables.record.student?.name || 'student'}`);
-      // Clear and reset form state
+      
       setRowPaymentAmount('');
       setRowPaymentRemarks('');
       setRowPaymentMethod('Cash');
       setRecordingPayment(null);
-      // Immediately refetch queries
+      
       queryClient.invalidateQueries({ queryKey: ['fees'] });
       queryClient.invalidateQueries({ queryKey: ['enrollments'] });
     },
@@ -232,13 +232,13 @@ export function Fees() {
     },
     onSuccess: (_, variables) => {
       notify.success(`Collected ${formatCurrency(variables.amount)} from ${variables.record.student?.name || 'student'}`);
-      // Reset form
+      
       setSelectedTargetId('');
       setAddPaymentAmount('');
       setAddPaymentRemarks('');
       setAddPaymentMethod('Cash');
       setIsAddFeeOpen(false);
-      // Immediately refetch queries
+      
       queryClient.invalidateQueries({ queryKey: ['fees'] });
       queryClient.invalidateQueries({ queryKey: ['enrollments'] });
     },
@@ -288,7 +288,7 @@ export function Fees() {
     }
   };
 
-  // Open Record Payment Modal for Row
+  
   const handleOpenPaymentModal = (record) => {
     setRecordingPayment(record);
     setRowPaymentAmount('');
@@ -297,7 +297,7 @@ export function Fees() {
     setRowPaymentRemarks('');
   };
 
-  // Handle Save Row Payment
+  
   const handleSaveRowPayment = (e) => {
     e.preventDefault();
     if (!recordingPayment) return;
@@ -317,7 +317,7 @@ export function Fees() {
     });
   };
 
-  // Handle Add Fee Payment Submit (from Top Modal)
+  
   const handleAddFeeSubmit = (e) => {
     e.preventDefault();
     const targetRecord = feeRecords.find((r) => r._id === selectedTargetId);
@@ -343,7 +343,7 @@ export function Fees() {
     });
   };
 
-  // Handle Adjust Total Fee Submit
+  
   const handleSaveFeeAdjustment = (e) => {
     e.preventDefault();
     if (!adjustingFeeRecord) return;
@@ -368,7 +368,7 @@ export function Fees() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Student Fee Records & Receivables</h1>
@@ -410,7 +410,7 @@ export function Fees() {
           </CardContent>
         </Card>
 
-        {/* TOTAL PAID / COLLECTED */}
+        {}
         <Card className="border shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-semibold uppercase text-muted-foreground">Total Paid / Collected</CardTitle>

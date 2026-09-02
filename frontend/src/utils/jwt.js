@@ -1,8 +1,4 @@
-/**
- * Parse JWT payload safely without external dependencies
- * @param {string} token JWT string
- * @returns {Object|null} Decoded payload or null
- */
+
 export function decodeJwt(token) {
   if (!token || typeof token !== 'string') return null;
   try {
@@ -22,11 +18,7 @@ export function decodeJwt(token) {
   }
 }
 
-/**
- * Check if token is expired
- * @param {string} token JWT string
- * @returns {boolean}
- */
+
 export function isTokenExpired(token) {
   const decoded = decodeJwt(token);
   if (!decoded || !decoded.exp) return true;
