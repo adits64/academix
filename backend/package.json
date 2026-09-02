@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "dotenvx run -- node index.js",
+    "start": "node index.js",
     "dev": "dotenvx run -- nodemon index.js"
   },
   "keywords": [],
