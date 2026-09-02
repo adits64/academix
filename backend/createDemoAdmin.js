@@ -7,25 +7,25 @@ const createAdmin = async () => {
         await connectDB();
 
         const existingAdmin = await User.findOne({
-            email: "admin@gmail.com"
+            email: "demo@academix.com"
         });
 
         if (existingAdmin) {
-            console.log("Admin already exists.");
+            console.log("Demo admin already exists.");
             process.exit(0);
         }
 
         await User.create({
-            name: "Admin",
-            email: "admin@gmail.com",
-            password: "Admin@12345",
+            name: "Demo Admin",
+            email: "demo@academix.com",
+            password: "D12345",
             role: "admin"
         });
 
-        console.log("Admin created successfully.");
+        console.log("Demo admin created successfully.");
         process.exit(0);
     } catch (error) {
-        console.error("Failed to create admin:", error.message);
+        console.error("Failed to create demo admin:", error.message);
         process.exit(1);
     }
 };
