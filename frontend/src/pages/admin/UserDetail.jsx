@@ -9,6 +9,7 @@ import { notesApi } from '@/api/notes';
 import { uploadFileToCloudinary } from '@/utils/upload';
 import { downloadNoteFile } from '@/utils/download';
 import { useNotification } from '@/hooks/useNotification';
+import { useAuth } from '@/hooks/useAuth';
 import { formatDate, getInitials } from '@/utils/format';
 import { ROLE_LABELS } from '@/constants/roles';
 import { toast } from 'sonner';
@@ -54,13 +55,17 @@ export function UserDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const notify = useNotification();
+  const { user: authUser } = useAuth();
   const queryClient = useQueryClient();
+
+  const isSelf = String(authUser?._id) === String(id);
 
   // Edit user state
   const [isEditingUser, setIsEditingUser] = useState(false);
   const [editName, setEditName] = useState('');
   const [editEmail, setEditEmail] = useState('');
   const [editRole, setEditRole] = useState('student');
+  const [editCurrentPassword, setEditCurrentPassword] = useState('');
   const [editNewPassword, setEditNewPassword] = useState('');
   const [editConfirmPassword, setEditConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -262,6 +267,7 @@ export function UserDetail() {
     setEditName(user?.name || '');
     setEditEmail(user?.email || '');
     setEditRole(user?.role || 'student');
+    setEditCurrentPassword('');
     setEditNewPassword('');
     setEditConfirmPassword('');
     setIsEditingUser(true);
@@ -269,6 +275,7 @@ export function UserDetail() {
 
   const handleCancelEdit = () => {
     setIsEditingUser(false);
+    setEditCurrentPassword('');
     setEditNewPassword('');
     setEditConfirmPassword('');
   };
@@ -311,6 +318,10 @@ export function UserDetail() {
       return;
     }
     if (editNewPassword) {
+      if (isSelf && !editCurrentPassword) {
+        toast.error('Current password is required to change your password');
+        return;
+      }
       if (editNewPassword.length < 6) {
         toast.error('Password must be at least 6 characters');
         return;
@@ -328,6 +339,9 @@ export function UserDetail() {
     };
     if (editNewPassword) {
       payload.password = editNewPassword;
+      if (isSelf && editCurrentPassword) {
+        payload.currentPassword = editCurrentPassword;
+      }
     }
 
     updateUserMutation.mutate(payload);
@@ -527,10 +541,27 @@ export function UserDetail() {
               <div className="p-4 rounded-lg border bg-muted/20 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-xs flex items-center gap-1.5">
-                    <KeyRound className="h-3.5 w-3.5 text-primary" /> Reset User Password (Optional)
+                    <KeyRound className="h-3.5 w-3.5 text-primary" /> {isSelf ? 'Change Your Password (Optional)' : 'Reset User Password (Optional)'}
                   </span>
                   <span className="text-[11px] text-muted-foreground">Leave blank to keep current password</span>
                 </div>
+
+                {isSelf && (
+                  <div className="space-y-1 max-w-sm">
+                    <label className="text-[11px] font-medium flex items-center gap-1">
+                      <Lock className="h-3 w-3 text-muted-foreground" /> Current Password
+                    </label>
+                    <Input
+                      type="password"
+                      placeholder="••••••••"
+                      value={editCurrentPassword}
+                      onChange={(e) => setEditCurrentPassword(e.target.value)}
+                      disabled={updateUserMutation.isPending}
+                      className="text-xs"
+                    />
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[11px] font-medium flex items-center gap-1">

@@ -6,6 +6,7 @@ import ATTENDANCE_ROUTER from "./attandance.js";
 import NOTE_ROUTER from "./notes.js";
 import EMAIL_ROUTER from "./mail.js";
 import ENROLLMENT_ROUTER from "./enrollment.js";
+import FEE_ROUTER from "./fee.js";
 
 
 const HANDLERS = Router();
@@ -21,7 +22,7 @@ HANDLERS.use('/enrollments', ENROLLMENT_ROUTER);
 HANDLERS.use('/attandances', ATTENDANCE_ROUTER);
 HANDLERS.use('/notes', NOTE_ROUTER);
 HANDLERS.use("/email", EMAIL_ROUTER);
-
+HANDLERS.use("/fees", FEE_ROUTER);
 
 
 

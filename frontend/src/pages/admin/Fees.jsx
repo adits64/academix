@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { feesApi } from '@/api/fees';
 import { enrollmentsApi } from '@/api/enrollments';
 import { coursesApi } from '@/api/courses';
 import { useNotification } from '@/hooks/useNotification';
@@ -28,13 +29,13 @@ import {
   Printer,
   Calendar,
   Wallet,
+  Loader2,
 } from 'lucide-react';
-
-const STORAGE_KEY = 'academix_fee_records';
 
 export function Fees() {
   const navigate = useNavigate();
   const notify = useNotification();
+  const queryClient = useQueryClient();
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -46,46 +47,30 @@ export function Fees() {
   const [viewingReceipt, setViewingReceipt] = useState(null);
 
   // Form Fields for Add / Collect Fee Payment Modal
-  const [selectedEnrollmentId, setSelectedEnrollmentId] = useState('');
-  const [paymentAmount, setPaymentAmount] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('Cash');
-  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
-  const [paymentRemarks, setPaymentRemarks] = useState('');
+  const [selectedTargetId, setSelectedTargetId] = useState('');
+  const [addPaymentAmount, setAddPaymentAmount] = useState('');
+  const [addPaymentMethod, setAddPaymentMethod] = useState('Cash');
+  const [addPaymentDate, setAddPaymentDate] = useState(new Date().toISOString().split('T')[0]);
+  const [addPaymentRemarks, setAddPaymentRemarks] = useState('');
+
+  // Form Fields for Record Payment Modal (Row)
+  const [rowPaymentAmount, setRowPaymentAmount] = useState('');
+  const [rowPaymentMethod, setRowPaymentMethod] = useState('Cash');
+  const [rowPaymentDate, setRowPaymentDate] = useState(new Date().toISOString().split('T')[0]);
+  const [rowPaymentRemarks, setRowPaymentRemarks] = useState('');
 
   // Form Fields for Fee Adjustment Modal
   const [customTotalFee, setCustomTotalFee] = useState('');
   const [adjustReason, setAdjustReason] = useState('');
 
-  // Local storage state for fee payments & overrides
-  const [feeOverrides, setFeeOverrides] = useState(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
+  // Fetch Fees from Backend
+  const { data: feesData, isLoading: feesLoading, isError: feesIsError, error: feesError } = useQuery({
+    queryKey: ['fees'],
+    queryFn: feesApi.getAllFees,
   });
 
-  const saveFeeRecord = (enrollmentId, updates) => {
-    const existing = feeOverrides[enrollmentId] || {};
-    const updated = {
-      ...feeOverrides,
-      [enrollmentId]: {
-        ...existing,
-        ...updates,
-        updatedAt: new Date().toISOString(),
-      },
-    };
-    setFeeOverrides(updated);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    } catch (e) {
-      console.error('Failed to save fee record to localStorage', e);
-    }
-  };
-
-  // Fetch Enrollments
-  const { data: enrollmentsData, isLoading: enrollmentsLoading, isError, error } = useQuery({
+  // Fetch Enrollments (for student/course linking and batch names)
+  const { data: enrollmentsData, isLoading: enrollmentsLoading } = useQuery({
     queryKey: ['enrollments'],
     queryFn: enrollmentsApi.getAllEnrollments,
   });
@@ -97,69 +82,90 @@ export function Fees() {
   });
 
   const courses = coursesData?.courses || [];
-  const existingCourseIds = new Set(courses.map((c) => String(c._id)));
-
   const rawEnrollments = Array.isArray(enrollmentsData) ? enrollmentsData : [];
-  const enrollments = rawEnrollments.filter((enr) => {
-    const courseId = String(enr.courseId?._id || enr.courseId || '');
-    const hasValidCourse = courseId && (existingCourseIds.size === 0 || existingCourseIds.has(courseId));
-    const hasValidStudent = Boolean(enr.studentId);
-    return hasValidCourse && hasValidStudent && enr.courseId;
-  });
+  const rawFees = Array.isArray(feesData) ? feesData : [];
 
   // Helper to resolve batch name
-  const getBatchName = (item) => {
-    if (item.batch?.name) return item.batch.name;
-    if (item.batchId?.name) return item.batchId.name;
-    const courseBatches = item.courseId?.batches;
-    const targetId = item.batchId?._id || item.batchId || item.batch?._id || item.batch;
-    if (Array.isArray(courseBatches)) {
-      const found = courseBatches.find((b) => String(b._id) === String(targetId));
-      if (found?.name) return found.name;
-    }
-    const parentCourse = courses.find((c) => c._id === (item.courseId?._id || item.courseId));
-    if (parentCourse?.batches) {
-      const found = parentCourse.batches.find((b) => String(b._id) === String(targetId));
-      if (found?.name) return found.name;
+  const getBatchName = (studentId, courseId) => {
+    const sId = String(studentId?._id || studentId || '');
+    const cId = String(courseId?._id || courseId || '');
+    const enr = rawEnrollments.find((e) => {
+      const matchStudent = String(e.studentId?._id || e.studentId || '') === sId;
+      const matchCourse = String(e.courseId?._id || e.courseId || '') === cId;
+      return matchStudent && matchCourse;
+    });
+
+    if (enr) {
+      if (enr.batch?.name) return enr.batch.name;
+      if (enr.batchId?.name) return enr.batchId.name;
+      const parentCourse = courses.find((c) => String(c._id) === cId);
+      if (parentCourse?.batches) {
+        const found = parentCourse.batches.find((b) => String(b._id) === String(enr.batchId || enr.batch?._id || enr.batch));
+        if (found?.name) return found.name;
+      }
     }
     return 'Morning Batch A';
   };
 
-  // Compile fee data for each active enrollment
-  const feeRecords = enrollments.map((enr) => {
-    const course = courses.find((c) => c._id === (enr.courseId?._id || enr.courseId)) || enr.courseId;
-    const override = feeOverrides[enr._id] || {};
+  // Build unified fee record list from backend fee records and enrollments
+  const feeRecordsMap = new Map();
 
-    const totalFee = override.customTotalFee !== undefined ? Number(override.customTotalFee) : Number(course?.fee) || 15000;
-    const paidAmount = Number(override.paidAmount) || 0;
-    const dueAmount = Math.max(0, totalFee - paidAmount);
+  // 1. Add all backend fee records
+  rawFees.forEach((fee) => {
+    const studentId = fee.studentId?._id || fee.studentId;
+    const courseId = fee.courseId?._id || fee.courseId;
+    const key = `${studentId}_${courseId}`;
+    const courseObj = courses.find((c) => String(c._id) === String(courseId)) || fee.courseId;
 
-    let status = 'unpaid';
-    if (paidAmount >= totalFee) {
-      status = 'paid';
-    } else if (paidAmount > 0) {
-      status = 'partial';
-    }
-
-    return {
-      enrollmentId: enr._id,
-      student: enr.studentId,
-      course: course,
-      batchName: getBatchName(enr),
-      enrollmentDate: enr.enrollmentDate,
-      totalFee,
-      paidAmount,
-      dueAmount,
-      status,
-      paymentDate: override.paymentDate || enr.enrollmentDate,
-      paymentMethod: override.paymentMethod || 'Cash',
-      remarks: override.remarks || '',
-      adjustReason: override.adjustReason || '',
-      history: override.history || [],
-    };
+    feeRecordsMap.set(key, {
+      _id: fee._id,
+      feeId: fee._id,
+      student: fee.studentId,
+      course: courseObj,
+      batchName: getBatchName(studentId, courseId),
+      totalFee: Number(fee.totalFee),
+      paidAmount: Number(fee.paidAmount) || 0,
+      dueAmount: Number(fee.dueAmount) !== undefined ? Number(fee.dueAmount) : Math.max(0, Number(fee.totalFee) - (Number(fee.paidAmount) || 0)),
+      status: fee.status || 'unpaid',
+      paymentDate: fee.paymentDate,
+      createdAt: fee.createdAt,
+      updatedAt: fee.updatedAt,
+      isPersisted: true,
+    });
   });
 
-  // Calculations
+  // 2. Include active enrollments that may not have explicit fee documents yet
+  rawEnrollments.forEach((enr) => {
+    if (!enr.studentId || !enr.courseId) return;
+    const studentId = enr.studentId?._id || enr.studentId;
+    const courseId = enr.courseId?._id || enr.courseId;
+    const key = `${studentId}_${courseId}`;
+
+    if (!feeRecordsMap.has(key)) {
+      const courseObj = courses.find((c) => String(c._id) === String(courseId)) || enr.courseId;
+      const totalFee = Number(courseObj?.fee) || 15000;
+      feeRecordsMap.set(key, {
+        _id: `temp_${enr._id}`,
+        feeId: null,
+        enrollmentId: enr._id,
+        student: enr.studentId,
+        course: courseObj,
+        batchName: enr.batch?.name || getBatchName(studentId, courseId),
+        totalFee,
+        paidAmount: 0,
+        dueAmount: totalFee,
+        status: 'unpaid',
+        paymentDate: null,
+        createdAt: enr.createdAt,
+        updatedAt: enr.updatedAt,
+        isPersisted: false,
+      });
+    }
+  });
+
+  const feeRecords = Array.from(feeRecordsMap.values());
+
+  // Aggregate Calculations
   const totalReceivable = feeRecords.reduce((sum, r) => sum + r.totalFee, 0);
   const totalPaid = feeRecords.reduce((sum, r) => sum + r.paidAmount, 0);
   const totalDue = feeRecords.reduce((sum, r) => sum + r.dueAmount, 0);
@@ -176,6 +182,99 @@ export function Fees() {
     return matchesSearch && matchesStatus;
   });
 
+  // Mutations
+  const recordPaymentMutation = useMutation({
+    mutationFn: async ({ record, amount }) => {
+      if (record.isPersisted && record.feeId) {
+        return await feesApi.recordPayment(record.feeId, amount);
+      } else {
+        // Create fee record with the initial payment
+        const studentId = record.student?._id || record.student;
+        const courseId = record.course?._id || record.course;
+        return await feesApi.createFee({
+          studentId,
+          courseId,
+          totalFee: record.totalFee,
+          paidAmount: amount,
+        });
+      }
+    },
+    onSuccess: (_, variables) => {
+      notify.success(`Payment of ${formatCurrency(variables.amount)} recorded for ${variables.record.student?.name || 'student'}`);
+      // Clear and reset form state
+      setRowPaymentAmount('');
+      setRowPaymentRemarks('');
+      setRowPaymentMethod('Cash');
+      setRecordingPayment(null);
+      // Immediately refetch queries
+      queryClient.invalidateQueries({ queryKey: ['fees'] });
+      queryClient.invalidateQueries({ queryKey: ['enrollments'] });
+    },
+    onError: (err) => {
+      notify.error(err.message || 'Failed to record payment');
+    },
+  });
+
+  const addPaymentMutation = useMutation({
+    mutationFn: async ({ record, amount }) => {
+      if (record.isPersisted && record.feeId) {
+        return await feesApi.recordPayment(record.feeId, amount);
+      } else {
+        const studentId = record.student?._id || record.student;
+        const courseId = record.course?._id || record.course;
+        return await feesApi.createFee({
+          studentId,
+          courseId,
+          totalFee: record.totalFee,
+          paidAmount: amount,
+        });
+      }
+    },
+    onSuccess: (_, variables) => {
+      notify.success(`Collected ${formatCurrency(variables.amount)} from ${variables.record.student?.name || 'student'}`);
+      // Reset form
+      setSelectedTargetId('');
+      setAddPaymentAmount('');
+      setAddPaymentRemarks('');
+      setAddPaymentMethod('Cash');
+      setIsAddFeeOpen(false);
+      // Immediately refetch queries
+      queryClient.invalidateQueries({ queryKey: ['fees'] });
+      queryClient.invalidateQueries({ queryKey: ['enrollments'] });
+    },
+    onError: (err) => {
+      notify.error(err.message || 'Failed to collect payment');
+    },
+  });
+
+  const adjustFeeMutation = useMutation({
+    mutationFn: async ({ record, newTotalFee }) => {
+      if (record.isPersisted && record.feeId) {
+        return await feesApi.updateFee(record.feeId, { totalFee: newTotalFee });
+      } else {
+        const studentId = record.student?._id || record.student;
+        const courseId = record.course?._id || record.course;
+        return await feesApi.createFee({
+          studentId,
+          courseId,
+          totalFee: newTotalFee,
+          paidAmount: 0,
+        });
+      }
+    },
+    onSuccess: (_, variables) => {
+      notify.success(`Total fee adjusted to ${formatCurrency(variables.newTotalFee)} for ${variables.record.student?.name || 'student'}`);
+      setCustomTotalFee('');
+      setAdjustReason('');
+      setAdjustingFeeRecord(null);
+      queryClient.invalidateQueries({ queryKey: ['fees'] });
+      queryClient.invalidateQueries({ queryKey: ['enrollments'] });
+    },
+    onError: (err) => {
+      notify.error(err.message || 'Failed to adjust fee');
+    },
+  });
+
   const getStatusBadge = (status) => {
     switch (status) {
       case 'paid':
@@ -185,105 +284,66 @@ export function Fees() {
       case 'unpaid':
         return <Badge variant="destructive" className="capitalize text-[11px]"><X className="h-3 w-3 mr-1" /> Unpaid</Badge>;
       default:
-        return <Badge variant="outline" className="text-[11px]">{status}</Badge>;
+        return <Badge variant="outline" className="text-[11px] capitalize">{status}</Badge>;
     }
   };
 
-  // Quick Record Payment for row
+  // Open Record Payment Modal for Row
   const handleOpenPaymentModal = (record) => {
     setRecordingPayment(record);
-    setPaymentAmount(record.paidAmount > 0 ? String(record.paidAmount) : '');
-    setPaymentMethod(record.paymentMethod || 'Cash');
-    setPaymentDate(new Date().toISOString().split('T')[0]);
-    setPaymentRemarks(record.remarks || '');
+    setRowPaymentAmount('');
+    setRowPaymentMethod('Cash');
+    setRowPaymentDate(new Date().toISOString().split('T')[0]);
+    setRowPaymentRemarks('');
   };
 
+  // Handle Save Row Payment
   const handleSaveRowPayment = (e) => {
     e.preventDefault();
     if (!recordingPayment) return;
-    const amount = Number(paymentAmount);
-    if (isNaN(amount) || amount < 0) {
-      notify.error('Please enter a valid payment amount');
+    const amount = Number(rowPaymentAmount);
+    if (isNaN(amount) || amount <= 0) {
+      notify.error('Please enter a valid payment amount greater than 0');
       return;
     }
-    if (amount > recordingPayment.totalFee) {
-      notify.error('Amount cannot exceed total course fee (' + formatCurrency(recordingPayment.totalFee) + ')');
+    if (amount > recordingPayment.dueAmount) {
+      notify.error(`Payment amount cannot exceed remaining due (${formatCurrency(recordingPayment.dueAmount)})`);
       return;
     }
 
-    const newHistory = [
-      ...(recordingPayment.history || []),
-      {
-        amount,
-        date: paymentDate,
-        method: paymentMethod,
-        remarks: paymentRemarks,
-        timestamp: new Date().toISOString(),
-      },
-    ];
-
-    saveFeeRecord(recordingPayment.enrollmentId, {
-      paidAmount: amount,
-      paymentDate,
-      paymentMethod,
-      remarks: paymentRemarks,
-      history: newHistory,
+    recordPaymentMutation.mutate({
+      record: recordingPayment,
+      amount,
     });
-
-    notify.success('Payment updated for ' + (recordingPayment.student?.name || 'student'));
-    setRecordingPayment(null);
   };
 
-  // Handle "+ Add / Collect Fee Payment" (from Top Button)
+  // Handle Add Fee Payment Submit (from Top Modal)
   const handleAddFeeSubmit = (e) => {
     e.preventDefault();
-    const targetRecord = feeRecords.find((r) => r.enrollmentId === selectedEnrollmentId);
+    const targetRecord = feeRecords.find((r) => r._id === selectedTargetId);
     if (!targetRecord) {
       notify.error('Please select an enrolled student');
       return;
     }
 
-    const amountToAdd = Number(paymentAmount);
-    if (isNaN(amountToAdd) || amountToAdd <= 0) {
+    const amount = Number(addPaymentAmount);
+    if (isNaN(amount) || amount <= 0) {
       notify.error('Please enter a valid payment amount greater than 0');
       return;
     }
 
-    const currentPaid = targetRecord.paidAmount;
-    const newTotalPaid = currentPaid + amountToAdd;
-
-    if (newTotalPaid > targetRecord.totalFee) {
-      notify.error('Payment exceeds remaining due amount (' + formatCurrency(targetRecord.dueAmount) + ')');
+    if (amount > targetRecord.dueAmount) {
+      notify.error(`Payment exceeds remaining due amount (${formatCurrency(targetRecord.dueAmount)})`);
       return;
     }
 
-    const newHistory = [
-      ...(targetRecord.history || []),
-      {
-        amount: amountToAdd,
-        date: paymentDate,
-        method: paymentMethod,
-        remarks: paymentRemarks,
-        timestamp: new Date().toISOString(),
-      },
-    ];
-
-    saveFeeRecord(targetRecord.enrollmentId, {
-      paidAmount: newTotalPaid,
-      paymentDate,
-      paymentMethod,
-      remarks: paymentRemarks,
-      history: newHistory,
+    addPaymentMutation.mutate({
+      record: targetRecord,
+      amount,
     });
-
-    notify.success('Collected ' + formatCurrency(amountToAdd) + ' from ' + (targetRecord.student?.name || 'student'));
-    setIsAddFeeOpen(false);
-    setSelectedEnrollmentId('');
-    setPaymentAmount('');
-    setPaymentRemarks('');
   };
 
-  // Handle Adjust Total Fee / Discount Modal
+  // Handle Adjust Total Fee Submit
   const handleSaveFeeAdjustment = (e) => {
     e.preventDefault();
     if (!adjustingFeeRecord) return;
@@ -292,18 +352,19 @@ export function Fees() {
       notify.error('Please enter a valid course fee amount');
       return;
     }
+    if (newFee < adjustingFeeRecord.paidAmount) {
+      notify.error(`Total fee cannot be lower than the amount already paid (${formatCurrency(adjustingFeeRecord.paidAmount)})`);
+      return;
+    }
 
-    saveFeeRecord(adjustingFeeRecord.enrollmentId, {
-      customTotalFee: newFee,
-      adjustReason,
+    adjustFeeMutation.mutate({
+      record: adjustingFeeRecord,
+      newTotalFee: newFee,
     });
-
-    notify.success('Total fee adjusted for ' + (adjustingFeeRecord.student?.name || 'student'));
-    setAdjustingFeeRecord(null);
   };
 
-  const selectedTargetForAdd = feeRecords.find((r) => r.enrollmentId === selectedEnrollmentId);
-  const isLoading = enrollmentsLoading || coursesLoading;
+  const selectedTargetForAdd = feeRecords.find((r) => r._id === selectedTargetId);
+  const isLoading = feesLoading || enrollmentsLoading || coursesLoading;
 
   return (
     <div className="space-y-6">
@@ -319,9 +380,10 @@ export function Fees() {
           <Button
             onClick={() => {
               setIsAddFeeOpen(true);
-              setPaymentDate(new Date().toISOString().split('T')[0]);
-              setPaymentAmount('');
-              setPaymentRemarks('');
+              setSelectedTargetId('');
+              setAddPaymentDate(new Date().toISOString().split('T')[0]);
+              setAddPaymentAmount('');
+              setAddPaymentRemarks('');
             }}
             className="font-semibold shadow-sm"
           >
@@ -425,9 +487,9 @@ export function Fees() {
       {/* Content State */}
       {isLoading ? (
         <LoadingSpinner text="Loading fee ledger and student records..." />
-      ) : isError ? (
+      ) : feesIsError ? (
         <div className="p-4 rounded-xl bg-destructive/10 text-destructive text-sm border border-destructive/20">
-          {error?.message || 'Error loading student fee records'}
+          {feesError?.message || 'Error loading student fee records'}
         </div>
       ) : filteredRecords.length === 0 ? (
         <EmptyState
@@ -458,7 +520,7 @@ export function Fees() {
               </thead>
               <tbody className="divide-y">
                 {filteredRecords.map((r) => (
-                  <tr key={r.enrollmentId} className="hover:bg-muted/20 transition-colors">
+                  <tr key={r._id} className="hover:bg-muted/20 transition-colors">
                     {/* Student Info with Navigation */}
                     <td className="py-3 px-4 font-semibold text-foreground flex items-center space-x-3">
                       <div
@@ -496,15 +558,12 @@ export function Fees() {
                           onClick={() => {
                             setAdjustingFeeRecord(r);
                             setCustomTotalFee(String(r.totalFee));
-                            setAdjustReason(r.adjustReason || '');
+                            setAdjustReason('');
                           }}
                         >
                           <Edit2 className="h-3 w-3" />
                         </Button>
                       </div>
-                      {r.adjustReason && (
-                        <p className="text-[10px] text-primary font-normal">{r.adjustReason}</p>
-                      )}
                     </td>
 
                     {/* Paid Amount */}
@@ -526,6 +585,7 @@ export function Fees() {
                         <Button
                           variant="outline"
                           size="sm"
+                          disabled={r.dueAmount === 0}
                           className="h-8 text-xs font-medium hover:bg-primary hover:text-primary-foreground transition-all"
                           onClick={() => handleOpenPaymentModal(r)}
                         >
@@ -570,14 +630,14 @@ export function Fees() {
               <div className="space-y-1.5">
                 <label className="font-medium">Select Enrolled Student</label>
                 <select
-                  value={selectedEnrollmentId}
-                  onChange={(e) => setSelectedEnrollmentId(e.target.value)}
+                  value={selectedTargetId}
+                  onChange={(e) => setSelectedTargetId(e.target.value)}
                   className="w-full h-10 rounded-md border bg-background px-3 text-xs sm:text-sm"
                   required
                 >
                   <option value="">Choose Student & Course...</option>
                   {feeRecords.map((r) => (
-                    <option key={r.enrollmentId} value={r.enrollmentId}>
+                    <option key={r._id} value={r._id}>
                       {r.student?.name} — {r.course?.name} ({r.batchName}) — Due: {formatCurrency(r.dueAmount)}
                     </option>
                   ))}
@@ -615,8 +675,9 @@ export function Fees() {
                     min="1"
                     max={selectedTargetForAdd ? selectedTargetForAdd.dueAmount : undefined}
                     placeholder="Enter amount to pay"
-                    value={paymentAmount}
-                    onChange={(e) => setPaymentAmount(e.target.value)}
+                    value={addPaymentAmount}
+                    onChange={(e) => setAddPaymentAmount(e.target.value)}
+                    disabled={addPaymentMutation.isPending}
                     required
                   />
                 </div>
@@ -624,8 +685,9 @@ export function Fees() {
                 <div className="space-y-1.5">
                   <label className="font-medium">Payment Mode</label>
                   <select
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    value={addPaymentMethod}
+                    onChange={(e) => setAddPaymentMethod(e.target.value)}
+                    disabled={addPaymentMutation.isPending}
                     className="w-full h-10 rounded-md border bg-background px-3 text-xs sm:text-sm"
                   >
                     <option value="Cash">Cash</option>
@@ -644,8 +706,9 @@ export function Fees() {
                   <label className="font-medium">Payment Date</label>
                   <Input
                     type="date"
-                    value={paymentDate}
-                    onChange={(e) => setPaymentDate(e.target.value)}
+                    value={addPaymentDate}
+                    onChange={(e) => setAddPaymentDate(e.target.value)}
+                    disabled={addPaymentMutation.isPending}
                     required
                   />
                 </div>
@@ -653,18 +716,31 @@ export function Fees() {
                   <label className="font-medium">Receipt Remarks / Ref</label>
                   <Input
                     placeholder="e.g. Installment 1 / Txn ID"
-                    value={paymentRemarks}
-                    onChange={(e) => setPaymentRemarks(e.target.value)}
+                    value={addPaymentRemarks}
+                    onChange={(e) => setAddPaymentRemarks(e.target.value)}
+                    disabled={addPaymentMutation.isPending}
                   />
                 </div>
               </div>
 
               <div className="flex items-center justify-end space-x-2 pt-2 border-t">
-                <Button type="button" variant="outline" size="sm" onClick={() => setIsAddFeeOpen(false)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsAddFeeOpen(false)}
+                  disabled={addPaymentMutation.isPending}
+                >
                   Cancel
                 </Button>
-                <Button type="submit" size="sm">
-                  Save Fee Payment
+                <Button type="submit" size="sm" disabled={addPaymentMutation.isPending}>
+                  {addPaymentMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Recording...
+                    </>
+                  ) : (
+                    'Save Fee Payment'
+                  )}
                 </Button>
               </div>
             </form>
@@ -687,7 +763,12 @@ export function Fees() {
                   Student: <span className="font-semibold text-foreground">{recordingPayment.student?.name}</span>
                 </p>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setRecordingPayment(null)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setRecordingPayment(null)}
+                disabled={recordPaymentMutation.isPending}
+              >
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -714,23 +795,26 @@ export function Fees() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="font-medium">Total Paid Amount (NPR)</label>
+                  <label className="font-medium">Payment Amount (NPR)</label>
                   <Input
                     type="number"
-                    min="0"
-                    max={recordingPayment.totalFee}
-                    placeholder={'Max ' + recordingPayment.totalFee}
-                    value={paymentAmount}
-                    onChange={(e) => setPaymentAmount(e.target.value)}
+                    min="1"
+                    max={recordingPayment.dueAmount}
+                    placeholder={`Max ${recordingPayment.dueAmount}`}
+                    value={rowPaymentAmount}
+                    onChange={(e) => setRowPaymentAmount(e.target.value)}
+                    disabled={recordPaymentMutation.isPending}
                     required
+                    autoFocus
                   />
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="font-medium">Payment Mode</label>
                   <select
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    value={rowPaymentMethod}
+                    onChange={(e) => setRowPaymentMethod(e.target.value)}
+                    disabled={recordPaymentMutation.isPending}
                     className="w-full h-10 rounded-md border bg-background px-3 text-xs sm:text-sm"
                   >
                     <option value="Cash">Cash</option>
@@ -748,8 +832,9 @@ export function Fees() {
                   <label className="font-medium">Payment Date</label>
                   <Input
                     type="date"
-                    value={paymentDate}
-                    onChange={(e) => setPaymentDate(e.target.value)}
+                    value={rowPaymentDate}
+                    onChange={(e) => setRowPaymentDate(e.target.value)}
+                    disabled={recordPaymentMutation.isPending}
                     required
                   />
                 </div>
@@ -757,18 +842,31 @@ export function Fees() {
                   <label className="font-medium">Remarks / Ref</label>
                   <Input
                     placeholder="e.g. Receipt #1024"
-                    value={paymentRemarks}
-                    onChange={(e) => setPaymentRemarks(e.target.value)}
+                    value={rowPaymentRemarks}
+                    onChange={(e) => setRowPaymentRemarks(e.target.value)}
+                    disabled={recordPaymentMutation.isPending}
                   />
                 </div>
               </div>
 
               <div className="flex items-center justify-end space-x-2 pt-2 border-t">
-                <Button type="button" variant="outline" size="sm" onClick={() => setRecordingPayment(null)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setRecordingPayment(null)}
+                  disabled={recordPaymentMutation.isPending}
+                >
                   Cancel
                 </Button>
-                <Button type="submit" size="sm">
-                  Save Fee Record
+                <Button type="submit" size="sm" disabled={recordPaymentMutation.isPending}>
+                  {recordPaymentMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Recording...
+                    </>
+                  ) : (
+                    'Save Fee Record'
+                  )}
                 </Button>
               </div>
             </form>
@@ -786,7 +884,12 @@ export function Fees() {
               <h3 className="text-base font-bold flex items-center">
                 <Edit2 className="h-4 w-4 mr-2 text-primary" /> Adjust Fee / Apply Scholarship
               </h3>
-              <Button variant="ghost" size="icon" onClick={() => setAdjustingFeeRecord(null)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setAdjustingFeeRecord(null)}
+                disabled={adjustFeeMutation.isPending}
+              >
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -800,10 +903,11 @@ export function Fees() {
                 <label className="font-medium">Custom Total Course Fee (NPR / Rs.)</label>
                 <Input
                   type="number"
-                  min="0"
+                  min={adjustingFeeRecord.paidAmount}
                   placeholder="e.g. 12000"
                   value={customTotalFee}
                   onChange={(e) => setCustomTotalFee(e.target.value)}
+                  disabled={adjustFeeMutation.isPending}
                   required
                 />
               </div>
@@ -814,15 +918,28 @@ export function Fees() {
                   placeholder="e.g. 20% Merit Scholarship / Early Bird"
                   value={adjustReason}
                   onChange={(e) => setAdjustReason(e.target.value)}
+                  disabled={adjustFeeMutation.isPending}
                 />
               </div>
 
               <div className="flex items-center justify-end space-x-2 pt-2 border-t">
-                <Button type="button" variant="outline" size="sm" onClick={() => setAdjustingFeeRecord(null)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAdjustingFeeRecord(null)}
+                  disabled={adjustFeeMutation.isPending}
+                >
                   Cancel
                 </Button>
-                <Button type="submit" size="sm">
-                  Save Custom Fee
+                <Button type="submit" size="sm" disabled={adjustFeeMutation.isPending}>
+                  {adjustFeeMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Saving...
+                    </>
+                  ) : (
+                    'Save Custom Fee'
+                  )}
                 </Button>
               </div>
             </form>
@@ -855,8 +972,10 @@ export function Fees() {
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-muted-foreground">Payment Date:</p>
-                  <p className="font-semibold text-foreground">{formatDate(viewingReceipt.paymentDate)}</p>
-                  <Badge variant="outline" className="text-[10px] mt-1">{viewingReceipt.paymentMethod}</Badge>
+                  <p className="font-semibold text-foreground">
+                    {viewingReceipt.paymentDate ? formatDate(viewingReceipt.paymentDate) : 'N/A'}
+                  </p>
+                  <Badge variant="outline" className="text-[10px] mt-1 capitalize">{viewingReceipt.status}</Badge>
                 </div>
               </div>
 
@@ -882,16 +1001,10 @@ export function Fees() {
                   <span className="font-bold text-destructive">{formatCurrency(viewingReceipt.dueAmount)}</span>
                 </div>
               </div>
-
-              {viewingReceipt.remarks && (
-                <div className="border-t pt-2 text-[11px] text-muted-foreground">
-                  <strong>Notes:</strong> {viewingReceipt.remarks}
-                </div>
-              )}
             </div>
 
             <div className="flex items-center justify-between pt-2 border-t">
-              <Badge variant={viewingReceipt.status === 'paid' ? 'success' : 'warning'} className="capitalize">
+              <Badge variant={viewingReceipt.status === 'paid' ? 'success' : viewingReceipt.status === 'partial' ? 'warning' : 'destructive'} className="capitalize">
                 Status: {viewingReceipt.status}
               </Badge>
               <div className="flex items-center space-x-2">

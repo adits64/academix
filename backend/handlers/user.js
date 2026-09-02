@@ -57,10 +57,11 @@ USER_ROUTER.patch(
     async(req, res, next) =>{
     try {
         const isAdmin = req.user.role === 'admin';
-        if (!isAdmin && String(req.user.userId) !== String(req.params.id)) {
+        const isSelf = String(req.user.userId) === String(req.params.id);
+        if (!isAdmin && !isSelf) {
             return res.status(403).json({ message: "Forbidden" });
         }
-        const user = await update(req.params.id, req.body, isAdmin);
+        const user = await update(req.params.id, req.body, isAdmin, isSelf);
         res.status(200).json({user});
     } catch (error) {
         next(error);

@@ -27,23 +27,22 @@ export const find = async(param, config) => {
 
 };
 
-export const update = async (id , data, isAdmin = false) => {
+export const update = async (id , data, isAdmin = false, isSelf = false) => {
     let { role, currentPassword, ...dataToUpdate } = data;
 
     // Check if password change is requested
     if (dataToUpdate.password) {
-        if (currentPassword || !isAdmin) {
-            if (!currentPassword && !isAdmin) {
+        const requiresCurrentPassword = isSelf || !isAdmin;
+        if (requiresCurrentPassword) {
+            if (!currentPassword) {
                 throw new ValidationError("Current password is required to change password");
             }
             const existingUser = await User.findById(id);
             if (!existingUser) throw new NotFoundError("User not found");
 
-            if (currentPassword) {
-                const match = await compare(currentPassword, existingUser.password);
-                if (!match) {
-                    throw new ValidationError("Current password is incorrect");
-                }
+            const match = await compare(currentPassword, existingUser.password);
+            if (!match) {
+                throw new ValidationError("Current password is incorrect");
             }
         }
     }

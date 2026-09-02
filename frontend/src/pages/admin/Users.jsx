@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { usersApi } from '@/api/users';
 import { createUserSchema, updateUserSchema } from '@/schemas/user';
 import { useNotification } from '@/hooks/useNotification';
+import { useAuth } from '@/hooks/useAuth';
 import { getInitials, formatDate } from '@/utils/format';
 import { ROLES, ROLE_LABELS } from '@/constants/roles';
 
@@ -33,6 +34,7 @@ import {
 export function Users() {
   const queryClient = useQueryClient();
   const notify = useNotification();
+  const { user: authUser } = useAuth();
   const navigate = useNavigate();
 
   const [search, setSearch] = useState('');
@@ -40,6 +42,7 @@ export function Users() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [deletingUser, setDeletingUser] = useState(null);
+  const [editCurrentPassword, setEditCurrentPassword] = useState('');
 
   // Fetch Users
   const { data, isLoading, isError, error } = useQuery({
@@ -101,6 +104,7 @@ export function Users() {
 
   const handleEditClick = (user) => {
     setEditingUser(user);
+    setEditCurrentPassword('');
     editForm.reset({
       name: user.name,
       email: user.email,
@@ -336,9 +340,17 @@ export function Users() {
             </div>
             <form
               onSubmit={editForm.handleSubmit((data) => {
-                // Filter out empty password if untouched
+                const isSelf = String(authUser?._id) === String(editingUser._id);
                 const payload = { ...data };
-                if (!payload.password) delete payload.password;
+                if (!payload.password) {
+                  delete payload.password;
+                } else if (isSelf) {
+                  if (!editCurrentPassword) {
+                    notify.error('Current password is required to change your password');
+                    return;
+                  }
+                  payload.currentPassword = editCurrentPassword;
+                }
                 updateMutation.mutate({ id: editingUser._id, data: payload });
               })}
               className="p-4 space-y-4"
@@ -352,6 +364,18 @@ export function Users() {
                 <label className="text-xs font-medium">Email Address</label>
                 <Input type="email" {...editForm.register('email')} />
               </div>
+
+              {editingUser && String(authUser?._id) === String(editingUser._id) && (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium">Current Password (Required for changing password)</label>
+                  <Input
+                    type="password"
+                    placeholder="••••••••"
+                    value={editCurrentPassword}
+                    onChange={(e) => setEditCurrentPassword(e.target.value)}
+                  />
+                </div>
+              )}
 
               <div className="space-y-1.5">
                 <label className="text-xs font-medium">New Password (leave blank to keep current)</label>

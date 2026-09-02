@@ -1,9 +1,10 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { feesApi } from '@/api/fees';
 import { enrollmentsApi } from '@/api/enrollments';
 import { formatCurrency, formatDate } from '@/utils/format';
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import EmptyState from '@/components/common/EmptyState';
@@ -14,21 +15,91 @@ import {
   BookOpen,
   CheckCircle2,
   AlertCircle,
+  XCircle,
   HelpCircle,
   Layers,
+  Calendar,
 } from 'lucide-react';
 
 export function StudentFees() {
-  const { data: enrollmentsData, isLoading, isError, error } = useQuery({
+  // Fetch logged-in student's fees
+  const { data: feesData, isLoading: feesLoading, isError: feesIsError, error: feesError } = useQuery({
+    queryKey: ['fees', 'my'],
+    queryFn: feesApi.getMyFees,
+  });
+
+  // Fetch logged-in student's enrollments (for batch/course context fallback)
+  const { data: enrollmentsData, isLoading: enrollmentsLoading } = useQuery({
     queryKey: ['enrollments', 'my'],
     queryFn: enrollmentsApi.getMyEnrollments,
   });
 
   const enrollments = Array.isArray(enrollmentsData) ? enrollmentsData : [];
+  const rawFees = Array.isArray(feesData) ? feesData : [];
 
-  const totalTuition = enrollments.reduce((sum, enr) => {
-    return sum + (enr.courseId?.fee || 0);
-  }, 0);
+  // Build unified fee list
+  const feeListMap = new Map();
+
+  // 1. Add all persisted fee records from backend
+  rawFees.forEach((fee) => {
+    const courseId = fee.courseId?._id || fee.courseId;
+    const key = String(courseId);
+    const matchedEnr = enrollments.find((e) => String(e.courseId?._id || e.courseId) === key);
+
+    feeListMap.set(key, {
+      _id: fee._id,
+      course: fee.courseId,
+      batch: matchedEnr?.batch,
+      totalFee: Number(fee.totalFee),
+      paidAmount: Number(fee.paidAmount) || 0,
+      dueAmount: Number(fee.dueAmount) !== undefined ? Number(fee.dueAmount) : Math.max(0, Number(fee.totalFee) - (Number(fee.paidAmount) || 0)),
+      status: fee.status || 'unpaid',
+      paymentDate: fee.paymentDate,
+    });
+  });
+
+  // 2. Add enrolled courses that might not have a fee document yet
+  enrollments.forEach((enr) => {
+    if (!enr.courseId) return;
+    const courseId = enr.courseId?._id || enr.courseId;
+    const key = String(courseId);
+
+    if (!feeListMap.has(key)) {
+      const courseObj = enr.courseId;
+      const totalFee = Number(courseObj?.fee) || 15000;
+      feeListMap.set(key, {
+        _id: `temp_${enr._id}`,
+        course: courseObj,
+        batch: enr.batch,
+        totalFee,
+        paidAmount: 0,
+        dueAmount: totalFee,
+        status: 'unpaid',
+        paymentDate: null,
+      });
+    }
+  });
+
+  const studentFeeItems = Array.from(feeListMap.values());
+
+  const totalTuition = studentFeeItems.reduce((sum, item) => sum + item.totalFee, 0);
+  const totalPaid = studentFeeItems.reduce((sum, item) => sum + item.paidAmount, 0);
+  const totalDue = studentFeeItems.reduce((sum, item) => sum + item.dueAmount, 0);
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'paid':
+        return <Badge variant="success" className="capitalize text-[11px]"><CheckCircle2 className="h-3 w-3 mr-1" /> Paid</Badge>;
+      case 'partial':
+        return <Badge variant="warning" className="capitalize text-[11px]"><AlertCircle className="h-3 w-3 mr-1" /> Partial</Badge>;
+      case 'unpaid':
+        return <Badge variant="destructive" className="capitalize text-[11px]"><XCircle className="h-3 w-3 mr-1" /> Unpaid</Badge>;
+      default:
+        return <Badge variant="outline" className="text-[11px] capitalize">{status}</Badge>;
+    }
+  };
+
+  const isLoading = feesLoading || enrollmentsLoading;
 
   return (
     <div className="space-y-6">
@@ -54,32 +125,40 @@ export function StudentFees() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">{formatCurrency(totalTuition)}</div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Across {enrollments.length} enrolled programs</p>
+            <div className="text-2xl font-bold text-foreground">
+              {isLoading ? '--' : formatCurrency(totalTuition)}
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Across {studentFeeItems.length} enrolled programs</p>
           </CardContent>
         </Card>
 
         <Card className="shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs text-muted-foreground font-medium flex items-center justify-between">
-              Active Enrollments <BookOpen className="h-4 w-4 text-emerald-500" />
+              Total Paid to Date <CheckCircle2 className="h-4 w-4 text-emerald-500" />
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{enrollments.length}</div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Approved registrations</p>
+            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+              {isLoading ? '--' : formatCurrency(totalPaid)}
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Total installments cleared</p>
           </CardContent>
         </Card>
 
         <Card className="shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs text-muted-foreground font-medium flex items-center justify-between">
-              Account Standing <CheckCircle2 className="h-4 w-4 text-indigo-500" />
+              Remaining Balance Due <AlertCircle className="h-4 w-4 text-destructive" />
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">In Good Standing</div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Campus billing status</p>
+            <div className="text-2xl font-bold text-destructive">
+              {isLoading ? '--' : formatCurrency(totalDue)}
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              {totalDue === 0 ? 'All fees settled in full' : 'Outstanding fee payable'}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -87,11 +166,11 @@ export function StudentFees() {
       {/* Content State */}
       {isLoading ? (
         <LoadingSpinner text="Fetching financial records..." />
-      ) : isError ? (
+      ) : feesIsError ? (
         <div className="p-4 rounded-xl bg-destructive/10 text-destructive text-sm border border-destructive/20">
-          {error.message || 'Failed to load course fee details'}
+          {feesError?.message || 'Failed to load course fee details'}
         </div>
-      ) : enrollments.length === 0 ? (
+      ) : studentFeeItems.length === 0 ? (
         <EmptyState
           icon={CreditCard}
           title="No Course Fee Records"
@@ -106,38 +185,51 @@ export function StudentFees() {
           </CardHeader>
 
           <div className="divide-y text-xs sm:text-sm">
-            {enrollments.map((enr) => {
-              const course = enr.courseId || {};
-              const batch = enr.batch || {};
+            {studentFeeItems.map((item) => {
+              const course = item.course || {};
+              const batch = item.batch || {};
 
               return (
-                <div key={enr._id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-muted/20 transition-colors">
-                  <div className="space-y-1">
+                <div key={item._id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/20 transition-colors">
+                  <div className="space-y-1.5 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-foreground">{course.name || 'Academic Course'}</span>
-                      <Badge variant="outline" className="text-[10px] text-primary border-primary/30">
+                      <span className="font-bold text-foreground text-sm sm:text-base">{course.name || 'Academic Course'}</span>
+                      <Badge variant="outline" className="text-[10px] text-primary border-primary/30 font-mono">
                         {course.code || 'COURSE'}
                       </Badge>
+                      {getStatusBadge(item.status)}
                     </div>
 
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span className="flex items-center">
-                        <Layers className="h-3 w-3 mr-1 text-primary" /> {batch.name || 'Batch'}
-                      </span>
-                      <span>•</span>
-                      <span>Duration: {course.duration ? `${course.duration} Months` : 'N/A'}</span>
-                      <span>•</span>
-                      <span>Registered: {formatDate(enr.createdAt)}</span>
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                      {batch.name && (
+                        <span className="flex items-center">
+                          <Layers className="h-3 w-3 mr-1 text-primary" /> {batch.name}
+                        </span>
+                      )}
+                      {item.paymentDate && (
+                        <span className="flex items-center">
+                          <Calendar className="h-3 w-3 mr-1 text-emerald-500" /> Last Payment: {formatDate(item.paymentDate)}
+                        </span>
+                      )}
                     </div>
                   </div>
 
-                  <div className="text-right">
-                    <div className="text-base font-bold text-foreground">
-                      {formatCurrency(course.fee || 0)}
+                  {/* Financial Figures */}
+                  <div className="flex items-center gap-6 self-end sm:self-center text-right">
+                    <div>
+                      <p className="text-[11px] text-muted-foreground">Total Fee</p>
+                      <p className="font-semibold text-foreground">{formatCurrency(item.totalFee)}</p>
                     </div>
-                    <Badge variant="outline" className="text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 mt-1">
-                      Enrolled
-                    </Badge>
+
+                    <div>
+                      <p className="text-[11px] text-muted-foreground">Paid Amount</p>
+                      <p className="font-semibold text-emerald-600 dark:text-emerald-400">{formatCurrency(item.paidAmount)}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-[11px] text-muted-foreground">Due Amount</p>
+                      <p className="font-bold text-destructive">{formatCurrency(item.dueAmount)}</p>
+                    </div>
                   </div>
                 </div>
               );

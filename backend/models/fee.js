@@ -4,12 +4,12 @@ const feeSchema = new Schema(
     {
         studentId:{
             type: Schema.Types.ObjectId,
-            ref:"Student",
+            ref:"User",
             required: true
         },
         courseId:{
             type:Schema.Types.ObjectId,
-            ref: "course",
+            ref: "Course",
             required: true
         },
         totalFee: {
