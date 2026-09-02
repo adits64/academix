@@ -151,3 +151,11 @@ Content-Type: application/json
     "subject": "Love Email ❤️",
     "message": "I love you ❤️"
 }
+###
+POST https://academix-21ax.onrender.com/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@gmail.com",
+  "password": "Admin@12345"
+}
